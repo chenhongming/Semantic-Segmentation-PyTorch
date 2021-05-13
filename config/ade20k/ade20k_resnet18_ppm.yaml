@@ -1,0 +1,11 @@
+DATA:
+  TRAIN_JSON: ADEChallengeData2016/train.json
+  VAL_JSON: ADEChallengeData2016/val.json
+  CLASSES: 150
+
+TRAIN:
+  ARCH: resnet18_ppm
+
+
+GPU_USE: True
+GPU_IDS: u'0,1'
