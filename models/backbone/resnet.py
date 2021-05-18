@@ -1,5 +1,6 @@
 # modified from torchvision.models.resnet
 import torch.nn as nn
+from .build import BACKBONE_REGISTRY
 
 # __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
 #            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
@@ -167,12 +168,13 @@ class ResNet(nn.Module):
 
         x = self.layer1(x)
         x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        c3 = self.layer3(x)
+        c4 = self.layer4(c3)
 
-        return x
+        return [c3, c4]
 
 
+@BACKBONE_REGISTRY.register()
 def resnet18(norm_layer, stride, head7x7):
     """
     Constructs a ResNet-18 model.
@@ -186,6 +188,7 @@ def resnet18(norm_layer, stride, head7x7):
     return ResNet(bottleneck=False, layers=(2, 2, 2, 2), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
 
 
+@BACKBONE_REGISTRY.register()
 def resnet34(norm_layer, stride, head7x7):
     """
     Constructs a ResNet-34 model.
@@ -199,6 +202,7 @@ def resnet34(norm_layer, stride, head7x7):
     return ResNet(bottleneck=False, layers=(3, 4, 6, 3), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
 
 
+@BACKBONE_REGISTRY.register()
 def resnet50(norm_layer, stride, head7x7):
     """
     Constructs a ResNet-50 model.
@@ -212,6 +216,7 @@ def resnet50(norm_layer, stride, head7x7):
     return ResNet(bottleneck=True, layers=(3, 4, 6, 3), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
 
 
+@BACKBONE_REGISTRY.register()
 def resnet101(norm_layer, stride, head7x7):
     """
     Constructs a ResNet-101 model.
@@ -225,6 +230,7 @@ def resnet101(norm_layer, stride, head7x7):
     return ResNet(bottleneck=True, layers=(3, 4, 23, 3), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
 
 
+@BACKBONE_REGISTRY.register()
 def resnet152(norm_layer, stride, head7x7):
     """
     Constructs a ResNet-152 model.

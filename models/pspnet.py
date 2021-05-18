@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from config.config import cfg
+from models.backbone.build import set_backbone
 
 
 class PyramidPoolingModule(nn.Module):
@@ -40,4 +41,5 @@ class PyramidPoolingModule(nn.Module):
 class PSPNet(nn.Module):
     def __init__(self):
         super().__init__()
+        self.backbone = set_backbone()
 

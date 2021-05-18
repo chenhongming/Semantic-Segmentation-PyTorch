@@ -8,6 +8,7 @@ import _init_path
 from config import config
 from utils.utils import setup_logger, setup_seed
 from dataset import dataset, set_augmentations
+from models.pspnet import PSPNet
 
 
 def main():
@@ -48,8 +49,11 @@ def main():
     val_set = dataset.JsonDataset(json_path=cfg.DATA.VAL_JSON, transform=input_transform,
                                   augmentations=input_augmentation)
     val_loader = torch.utils.data.DataLoader(val_set, batch_size=1, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
-    for i, (inputs, target) in enumerate(val_loader):
-        print(i)
+    # for i, (inputs, target) in enumerate(val_loader):
+    #     print(i)
+    # Setup Model
+    model = PSPNet()
+    print(model)
 
 
 if __name__ == '__main__':
