@@ -24,7 +24,7 @@ def main():
         config.merge_cfg_from_file(cfg, args.cfg_file)
     if args.opts is not None:
         config.merge_cfg_from_list(cfg, args.opts)
-    logger = setup_logger()
+    logger = setup_logger('main-logger')
     logger.info("Called with args: {}".format(args))
     logger.info("Running with cfg:\n{}".format(config.logger_cfg_from_file(args.cfg_file)))
 

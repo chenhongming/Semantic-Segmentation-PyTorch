@@ -51,6 +51,12 @@ _C.MODEL = CN()
 _C.MODEL.BACKBONE_NAME = 'resnet18'
 _C.MODEL.BACKBONE_PRETRAINED = True
 _C.MODEL.BACKBONE_WEIGHT = "pretrained/resnet18-5c106cde.pth"
+_C.MODEL.PHASE = 'train'
+_C.MODEL.RESUME = False
+_C.MODEL.FINETUNE = False
+_C.MODEL.NAME = 'psp'
+_C.MODEL.PRETRAINED = True
+_C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
 
 # ---------------------------------------------------------------------------- #
 # PPM options
