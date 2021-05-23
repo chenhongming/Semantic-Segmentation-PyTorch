@@ -1,5 +1,6 @@
 import os
 from yacs.config import CfgNode as CN
+from utils.utils import root_path
 
 # ----------------------------------------------------------------------------------- #
 # Config definition
@@ -21,7 +22,7 @@ _C.DATA.DATASET = 'ade20k'
 _C.DATA.TRAIN_JSON = ""
 _C.DATA.VAL_JSON = ""
 _C.DATA.TEST_JSON = ""
-_C.DATA.CLASSES = 0
+_C.DATA.CLASSES = 150
 _C.DATA.MEAN = [0.485, 0.456, 0.406]
 _C.DATA.STD = [0.229, 0.224, 0.225]
 
@@ -51,18 +52,28 @@ _C.MODEL = CN()
 _C.MODEL.BACKBONE_NAME = 'resnet18'
 _C.MODEL.BACKBONE_PRETRAINED = True
 _C.MODEL.BACKBONE_WEIGHT = "pretrained/resnet18-5c106cde.pth"
+_C.MODEL.NORM_LAYER = 'bn'  # bn or syncbn
+_C.MODEL.OUTPUT_STRIDE = 8  # 8, 16, 32
+_C.MODEL.HEAD7X7 = False  # only for resnet backbone
 _C.MODEL.PHASE = 'train'
 _C.MODEL.RESUME = False
 _C.MODEL.FINETUNE = False
 _C.MODEL.NAME = 'psp'
 _C.MODEL.PRETRAINED = True
 _C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
+# output.size * room_factor
+_C.MODEL.ROOM_FACTOR = 8
 
 # ---------------------------------------------------------------------------- #
 # PPM options
 # ---------------------------------------------------------------------------- #
 _C.PPM = CN()
 _C.PPM.POOL_SCALES = (1, 2, 3, 6)
+_C.PPM.PPM_HIDDEN_DIM = 512
+_C.PPM.PPM_OUT_DIM = 512
+_C.PPM.DROP_OUT = 0.1
+_C.PPM.USE_AUX = True
+_C.PPM.AUX_LOSS_WEIGHT = 0.4
 
 # ---------------------------------------------------------------------------- #
 # Misc options
@@ -80,26 +91,18 @@ _C.GPU_IDS = u'0,1,2,3,4,5,6,7'
 _C.SEED = 1024
 
 
-def load_defaults_cfg():
-    """
-    Get a yacs CfgNode object with default values.
-    Return a clone so that the defaults will not be altered
-    """
-    return _C.clone()
-
-
-def merge_cfg_from_file(cfg, file):
-    if os.path.isfile(file) and file.endswith('.yaml'):
-        cfg.merge_from_file(file)
-        cfg.freeze()
+def merge_cfg_from_file(file):
+    if os.path.isfile(root_path() + file) and file.endswith('.yaml'):
+        cfg.merge_from_file(root_path() + file)
     else:
         raise Exception('{} is not a yaml file'.format(file))
 
 
-def merge_cfg_from_list(cfg, cfg_list):
+def merge_cfg_from_list(cfg_list):
     cfg.merge_from_list(cfg_list)
 
 
+# for shown
 def logger_cfg_from_file(file):
-    return CN.load_cfg(open(file))
+    return cfg.load_cfg(open(root_path() + file))
 

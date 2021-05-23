@@ -5,7 +5,7 @@ from collections import OrderedDict
 from torch.hub import load_state_dict_from_url as load_url  # noqa: F401
 
 from utils.registry import Registry
-from utils.utils import setup_logger, root_path
+from utils.utils import setup_logger, root_path, set_norm
 from config.config import cfg
 
 BACKBONE_REGISTRY = Registry('backbone')
@@ -25,7 +25,10 @@ model_urls = {
 
 def set_backbone():
     backbone_name = cfg.MODEL.BACKBONE_NAME
-    backbone = BACKBONE_REGISTRY.get(backbone_name)(norm_layer=torch.nn.BatchNorm2d, stride=8, head7x7=True)
+    norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
+    output_stride = cfg.MODEL.OUTPUT_STRIDE
+    head7x7 = cfg.MODEL.HEAD7X7
+    backbone = BACKBONE_REGISTRY.get(backbone_name)(norm_layer=norm_layer, stride=output_stride, head7x7=head7x7)
     if cfg.MODEL.BACKBONE_PRETRAINED:
         backbone = load_pretrain_backbone(backbone, backbone_name)
     return backbone
@@ -76,7 +79,7 @@ def weight_filler(ckpt_dict, model_dict):
             if v.shape == model_dict[k].shape:
                 matched_weights[k] = v
             else:
-                unmatched_weights.append([k, v.shape, model_dict[k].shape + '\n'])
+                unmatched_weights.append([k, str(v.shape), str(model_dict[k].shape)])
         else:
             unmatched_weights.append(k)
     return matched_weights, unmatched_weights

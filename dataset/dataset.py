@@ -4,10 +4,12 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
+from utils.utils import root_path
+
 
 class JsonDataset(Dataset):
-    def __init__(self, root="../data/", json_path="", split='train', transform=None, augmentations=None):
-        self.root = root
+    def __init__(self, root="data/", json_path="", split='train', transform=None, augmentations=None):
+        self.root = root_path() + root
         self.json_path = json_path
         self.split = split
         self.transform = transform

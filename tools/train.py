@@ -5,28 +5,27 @@ import argparse
 from torchvision import transforms
 
 import _init_path
-from config import config
-from utils.utils import setup_logger, setup_seed
+from config.config import cfg, merge_cfg_from_file, merge_cfg_from_list, logger_cfg_from_file
 from dataset import dataset, set_augmentations
 from models.pspnet import PSPNet
+from utils.utils import setup_logger, setup_seed
 
 
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_resnet18_ppm.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_resnet18_ppm.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
     args = parser.parse_args()
-    cfg = config.load_defaults_cfg()  # all config options
     if args.cfg_file is not None:
-        config.merge_cfg_from_file(cfg, args.cfg_file)
+        merge_cfg_from_file(args.cfg_file)
     if args.opts is not None:
-        config.merge_cfg_from_list(cfg, args.opts)
+        merge_cfg_from_list(args.opts)
     logger = setup_logger('main-logger')
     logger.info("Called with args: {}".format(args))
-    logger.info("Running with cfg:\n{}".format(config.logger_cfg_from_file(args.cfg_file)))
+    logger.info("Running with cfg:\n{}".format(logger_cfg_from_file(args.cfg_file)))
 
     # Setup Device
     if torch.cuda.is_available() and cfg.GPU_USE:
@@ -53,7 +52,6 @@ def main():
     #     print(i)
     # Setup Model
     model = PSPNet()
-    print(model)
 
 
 if __name__ == '__main__':

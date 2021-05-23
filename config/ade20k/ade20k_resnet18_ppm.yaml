@@ -1,11 +1,17 @@
 DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
   VAL_JSON: ADEChallengeData2016/val.json
-  CLASSES: 150
+  CLASSES: 21
 
 TRAIN:
   ARCH: resnet18_ppm
 
+MODEL:
+  ROOM_FACTOR: 8
+  OUTPUT_STRIDE: 8
+
+PPM:
+  USE_AUX: False
 
 GPU_USE: True
 GPU_IDS: u'0,1'

@@ -28,3 +28,12 @@ def root_path():
     cur_path = os.path.dirname(__file__)
     return cur_path[:cur_path.find('Semantic Segmentation PyTorch') + len('Semantic Segmentation PyTorch')+1]
 
+
+def set_norm(norm):
+    if norm == 'bn':
+        return torch.nn.BatchNorm2d
+    elif norm == 'syncbn':
+        return torch.nn.SyncBatchNorm
+    else:
+        raise AttributeError
+

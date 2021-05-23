@@ -117,6 +117,7 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, base_width * 2, layers[1], 2)
         self.layer3 = self._make_layer(block, base_width * 4, layers[2], strides[0], dilations[0])
         self.layer4 = self._make_layer(block, base_width * 8, layers[3], strides[1], dilations[1])
+        self.dim_out = [base_width * 4 * block.expansion, base_width * 8 * block.expansion]
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
