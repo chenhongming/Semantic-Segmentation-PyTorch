@@ -30,7 +30,6 @@ _C.DATA.STD = [0.229, 0.224, 0.225]
 # TRAIN options
 # ---------------------------------------------------------------------------- #
 _C.TRAIN = CN()
-_C.TRAIN.ARCH = ""
 _C.TRAIN.AUGMENTATIONS = ['RandomFlip', 'RandomResize', 'RandomCrop', 'RandomRotate']
 # Probability of using RandomFlip
 _C.TRAIN.PROB = 0.5
@@ -51,7 +50,7 @@ _C.TRAIN.IGNORE_LABEL = 255
 _C.MODEL = CN()
 _C.MODEL.BACKBONE_NAME = 'resnet18'
 _C.MODEL.BACKBONE_PRETRAINED = True
-_C.MODEL.BACKBONE_WEIGHT = "pretrained/resnet18-5c106cde.pth"
+_C.MODEL.BACKBONE_WEIGHT = "pretrained/"
 _C.MODEL.NORM_LAYER = 'bn'  # bn or syncbn
 _C.MODEL.OUTPUT_STRIDE = 8  # 8, 16, 32
 _C.MODEL.HEAD7X7 = False  # only for resnet backbone
@@ -63,6 +62,7 @@ _C.MODEL.PRETRAINED = True
 _C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
 # output.size * room_factor
 _C.MODEL.ROOM_FACTOR = 8
+_C.MODEL.MULTIPLIER = 1.0  # only for mobilenet backbone
 
 # ---------------------------------------------------------------------------- #
 # PPM options

@@ -1,10 +1,11 @@
 # modified from torchvision.models.resnet
 import torch.nn as nn
-from .build import BACKBONE_REGISTRY
 
-# __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
-#            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
-#            'wide_resnet50_2', 'wide_resnet101_2']
+from .build import BACKBONE_REGISTRY
+from config.config import cfg
+from utils.utils import set_norm
+
+__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152']
 
 
 class BasicBlock(nn.Module):
@@ -47,7 +48,7 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, stride=1, bias=False)
         self.bn1 = norm_layer(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, dilation=dilation, padding=dilation, bias=False)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, dilation=dilation, padding=dilation, bias=False)
         self.bn2 = norm_layer(planes)
         self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, stride=1, bias=False)
         self.bn3 = norm_layer(planes * self.expansion)
@@ -79,23 +80,27 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, bottleneck=True, layers=(2, 2, 2, 2), norm_layer=nn.BatchNorm2d,
-                 stride=32, head7x7=True, base_width=64):
+    def __init__(self, bottleneck=True, layers=(2, 2, 2, 2), base_width=64):
         super(ResNet, self).__init__()
+        norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
+        output_stride = cfg.MODEL.OUTPUT_STRIDE
+        head7x7 = cfg.MODEL.HEAD7X7
         if bottleneck:
             block = Bottleneck
         else:
             block = BasicBlock
 
-        if stride == 8:
+        if output_stride == 8:
             strides = (1, 1)
             dilations = (2, 4)
-        elif stride == 16:
+        elif output_stride == 16:
             strides = (2, 1)
             dilations = (1, 2)
-        else:
+        elif output_stride == 32:
             strides = (2, 2)
             dilations = (1, 1)
+        else:
+            raise AssertionError
 
         self.inplanes = base_width  # default 64
         self.head7x7 = head7x7
@@ -176,75 +181,60 @@ class ResNet(nn.Module):
 
 
 @BACKBONE_REGISTRY.register()
-def resnet18(norm_layer, stride, head7x7):
+def resnet18():
     """
     Constructs a ResNet-18 model.
     Args:
         bottleneck: Use bottleneck for building resnet model if Ture, otherwise use basicblock
         layers: Number of layers to build resnet model
-        norm_layer: nn.BatchNorm2d or nn.SyncBatchNorm
-        stride: image downsampling rate, the default is 8 for semantic segmentation
-        head7x7: origin resnet model if Ture
     """
-    return ResNet(bottleneck=False, layers=(2, 2, 2, 2), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
+    return ResNet(bottleneck=False, layers=(2, 2, 2, 2))
 
 
 @BACKBONE_REGISTRY.register()
-def resnet34(norm_layer, stride, head7x7):
+def resnet34():
     """
     Constructs a ResNet-34 model.
     Args:
         bottleneck: Use bottleneck for building resnet model if Ture, otherwise use basicblock
         layers: Number of layers to build resnet model
-        norm_layer: nn.BatchNorm2d or nn.SyncBatchNorm
-        stride: image downsampling rate, the default is 8 for semantic segmentation
-        head7x7: origin resnet model if Ture
     """
-    return ResNet(bottleneck=False, layers=(3, 4, 6, 3), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
+    return ResNet(bottleneck=False, layers=(3, 4, 6, 3))
 
 
 @BACKBONE_REGISTRY.register()
-def resnet50(norm_layer, stride, head7x7):
+def resnet50():
     """
     Constructs a ResNet-50 model.
     Args:
         bottleneck: Use bottleneck for building resnet model if Ture, otherwise use basicblock
         layers: Number of layers to build resnet model
-        norm_layer: nn.BatchNorm2d or nn.SyncBatchNorm
-        stride: image downsampling rate, the default is 8 for semantic segmentation
-        head7x7: origin resnet model if Ture
     """
-    return ResNet(bottleneck=True, layers=(3, 4, 6, 3), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
+    return ResNet(bottleneck=True, layers=(3, 4, 6, 3))
 
 
 @BACKBONE_REGISTRY.register()
-def resnet101(norm_layer, stride, head7x7):
+def resnet101():
     """
     Constructs a ResNet-101 model.
     Args:
         bottleneck: Use bottleneck for building resnet model if Ture, otherwise use basicblock
         layers: Number of layers to build resnet model
-        norm_layer: nn.BatchNorm2d or nn.SyncBatchNorm
-        stride: image downsampling rate, the default is 8 for semantic segmentation
-        head7x7: origin resnet model if Ture
     """
-    return ResNet(bottleneck=True, layers=(3, 4, 23, 3), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
+    return ResNet(bottleneck=True, layers=(3, 4, 23, 3))
 
 
 @BACKBONE_REGISTRY.register()
-def resnet152(norm_layer, stride, head7x7):
+def resnet152():
     """
     Constructs a ResNet-152 model.
     Args:
         bottleneck: Use bottleneck for building resnet model if Ture, otherwise use basicblock
         layers: Number of layers to build resnet model
-        norm_layer: nn.BatchNorm2d or nn.SyncBatchNorm
-        stride: image downsampling rate, the default is 8 for semantic segmentation
-        head7x7: origin resnet model if Ture
     """
-    return ResNet(bottleneck=True, layers=(3, 8, 36, 3), norm_layer=norm_layer, stride=stride, head7x7=head7x7)
+    return ResNet(bottleneck=True, layers=(3, 8, 36, 3))
 
 
 if __name__ == '__main__':
-    resnet50 = resnet50(norm_layer=nn.BatchNorm2d, stride=8, head7x7=True)
+    resnet50 = resnet50()
     print(resnet50)

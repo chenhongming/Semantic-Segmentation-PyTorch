@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from config.config import cfg
 from models.backbone.build import set_backbone
+from models.model_zone import MODEL_REGISTRY
 from utils.utils import set_norm
 
 
@@ -80,3 +81,8 @@ class PSPNet(nn.Module):
             aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
             return out, aux_out
         return out
+
+
+@MODEL_REGISTRY.register()
+def psp():
+    return PSPNet()

@@ -3,14 +3,22 @@ DATA:
   VAL_JSON: ADEChallengeData2016/val.json
   CLASSES: 21
 
-TRAIN:
-  ARCH: resnet18_ppm
-
 MODEL:
+  NAME: 'psp'
+  BACKBONE_NAME: 'mobilenet_v1'
+  BACKBONE_PRETRAINED: True
+  BACKBONE_WEIGHT: "pretrained/"
+  NORM_LAYER: 'bn'
+  PHASE: 'train'
+  RESUME: False
+  FINETUNE: False
+  PRETRAINED: True
+  MODEL_WEIGHT: "ckpts/ade20k/model.pth"
   ROOM_FACTOR: 8
   OUTPUT_STRIDE: 8
 
 PPM:
+  POOL_SCALES: (1, 2, 3, 6)
   USE_AUX: False
 
 GPU_USE: True

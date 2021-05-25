@@ -7,7 +7,7 @@ from torchvision import transforms
 import _init_path
 from config.config import cfg, merge_cfg_from_file, merge_cfg_from_list, logger_cfg_from_file
 from dataset import dataset, set_augmentations
-from models.pspnet import PSPNet
+from models.model_zone import generate_model
 from utils.utils import setup_logger, setup_seed
 
 
@@ -51,7 +51,8 @@ def main():
     # for i, (inputs, target) in enumerate(val_loader):
     #     print(i)
     # Setup Model
-    model = PSPNet()
+    model = generate_model()
+    print(model)
 
 
 if __name__ == '__main__':

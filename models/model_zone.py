@@ -10,7 +10,7 @@ MODEL_REGISTRY = Registry('model')
 # generate a semantic segmentation model using cfg prams
 def generate_model():
     name = cfg.MODEL.NAME
-    model = MODEL_REGISTRY.get(name)
+    model = MODEL_REGISTRY.get(name)()
     if cfg.MODEL.PRETRAINED:
       model = load_pretrained_model(model)
     return model
