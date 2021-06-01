@@ -14,7 +14,7 @@ from utils.utils import setup_logger, setup_seed
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_resnet18_ppm.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_fcn32s.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)

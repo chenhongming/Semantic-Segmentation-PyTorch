@@ -1,4 +1,4 @@
-# modified from torchvision.models.resnet
+# modified from torchvision.models.mobilenetv2
 import torch.nn as nn
 
 from .build import BACKBONE_REGISTRY
@@ -9,6 +9,7 @@ __all__ = ['MobileNetV2', 'mobilenet_v2']
 
 
 class ConvBNActivation(nn.Sequential):
+
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0,
                  dilation=1, groups=1, norm_layer=nn.BatchNorm2d):
         super(ConvBNReLU, self).__init__(
@@ -25,6 +26,7 @@ ConvBNReLU = ConvBNActivation
 
 
 class InvertedResidual(nn.Module):
+
     def __init__(self, in_channels, out_channels,  expand_ratio, stride=1, padding=0,
                  dilation=1, norm_layer=nn.BatchNorm2d):
         super(InvertedResidual, self).__init__()
@@ -53,7 +55,8 @@ class InvertedResidual(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, multiplier=1.0):
+
+    def __init__(self):
         super(MobileNetV2, self).__init__()
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)

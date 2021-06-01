@@ -80,6 +80,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
+
     def __init__(self, bottleneck=True, layers=(2, 2, 2, 2), base_width=64):
         super(ResNet, self).__init__()
         norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
@@ -234,7 +235,3 @@ def resnet152():
     """
     return ResNet(bottleneck=True, layers=(3, 8, 36, 3))
 
-
-if __name__ == '__main__':
-    resnet50 = resnet50()
-    print(resnet50)

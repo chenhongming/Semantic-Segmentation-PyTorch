@@ -7,8 +7,11 @@ from models.backbone.build import set_backbone
 from models.model_zone import MODEL_REGISTRY
 from utils.utils import set_norm
 
+__all__ = ['PSPNet', 'psp']
+
 
 class PyramidPoolingModule(nn.Module):
+
     def __init__(self, dim_in):
         super().__init__()
         ppm_hidden_dim = cfg.PPM.PPM_HIDDEN_DIM  # default: 512
@@ -45,6 +48,7 @@ class PyramidPoolingModule(nn.Module):
 
 
 class PSPNet(nn.Module):
+
     def __init__(self):
         super().__init__()
         dropout = cfg.PPM.DROP_OUT
@@ -74,11 +78,13 @@ class PSPNet(nn.Module):
         c3, c4 = self.backbone(x)
         c4 = self.head(c4)
         out = self.output(c4)
-        out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
+        if self.zoom_factor != 1:
+            out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
         if cfg.PPM.USE_AUX and cfg.MODEL.PHASE == 'train':
             aux_out = self.aux(c3)
             aux_out = self.output(aux_out)
-            aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
+            if self.zoom_factor != 1:
+                aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
             return out, aux_out
         return out
 

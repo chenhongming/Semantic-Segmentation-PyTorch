@@ -9,6 +9,7 @@ __all__ = ['MobileNetV1', 'mobilenet_v1']
 
 
 class ConvBNReLU(nn.Module):
+
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0,
                  dilation=1, groups=1, norm_layers=nn.BatchNorm2d):
         super(ConvBNReLU, self).__init__()
@@ -29,6 +30,7 @@ class DWConvBNReLU(nn.Module):
     Depthwise Separable Convolution in MobileNetV1
     depthwise convolution + pointwise convolution
     """
+
     def __init__(self,  in_channels, out_channels, stride=1, padding=0, dilation=1, norm_layers=nn.BatchNorm2d):
         super(DWConvBNReLU, self).__init__()
         self.conv = nn.Sequential(
@@ -42,6 +44,7 @@ class DWConvBNReLU(nn.Module):
 
 
 class MobileNetV1(nn.Module):
+
     def __init__(self):
         super(MobileNetV1, self).__init__()
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE

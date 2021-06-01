@@ -67,6 +67,7 @@ _C.MODEL.MULTIPLIER = 1.0  # only for mobilenet backbone
 # ---------------------------------------------------------------------------- #
 # PPM options
 # ---------------------------------------------------------------------------- #
+# supported backbone: resnet mobilenetv1 mobilenetv2
 _C.PPM = CN()
 _C.PPM.POOL_SCALES = (1, 2, 3, 6)
 _C.PPM.PPM_HIDDEN_DIM = 512
@@ -74,6 +75,13 @@ _C.PPM.PPM_OUT_DIM = 512
 _C.PPM.DROP_OUT = 0.1
 _C.PPM.USE_AUX = True
 _C.PPM.AUX_LOSS_WEIGHT = 0.4
+
+# ---------------------------------------------------------------------------- #
+# FCN options
+# ---------------------------------------------------------------------------- #
+# supported backbone: only vgg
+_C.FCN = CN()
+_C.FCN.DROP_OUT = 0.1
 
 # ---------------------------------------------------------------------------- #
 # Misc options

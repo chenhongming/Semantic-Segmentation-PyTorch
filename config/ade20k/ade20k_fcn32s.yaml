@@ -1,0 +1,23 @@
+DATA:
+  TRAIN_JSON: ADEChallengeData2016/train.json
+  VAL_JSON: ADEChallengeData2016/val.json
+  CLASSES: 21
+
+MODEL:
+  NAME: 'fcn32s'
+  BACKBONE_NAME: 'vgg11'
+  BACKBONE_PRETRAINED: True
+  BACKBONE_WEIGHT: "pretrained/"
+  NORM_LAYER: 'bn'
+  PHASE: 'train'
+  RESUME: False
+  FINETUNE: False
+  PRETRAINED: True
+  MODEL_WEIGHT: "ckpts/ade20k/model.pth"
+
+
+FCN:
+  DROP_OUT: 0.1
+
+GPU_USE: True
+GPU_IDS: u'0,1'
