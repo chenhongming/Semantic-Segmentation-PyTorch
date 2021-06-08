@@ -8,6 +8,14 @@ from models.model_zone import MODEL_REGISTRY
 from utils.utils import set_norm
 
 __all__ = ['PSPNet', 'psp']
+# -------------------------------------------------------------------------------------- #
+# supported backbone:
+# 'mobilenet_v1' (multiplier=0.5, 1.0, 1.5, 2.0)
+# 'mobilenet_v2' (multiplier=0.5, 1.0, 1.5, 2.0)
+# 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
+# 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0'
+# -------------------------------------------------------------------------------------- #
+
 
 
 class PyramidPoolingModule(nn.Module):
@@ -51,22 +59,24 @@ class PSPNet(nn.Module):
 
     def __init__(self):
         super().__init__()
-        dropout = cfg.PPM.DROP_OUT
-        classes = cfg.DATA.CLASSES
-        norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
+        self.dropout = cfg.PPM.DROP_OUT
+        self.classes = cfg.DATA.CLASSES
+        self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         self.zoom_factor = cfg.MODEL.ROOM_FACTOR
         assert self.zoom_factor in [1, 2, 4, 8]
 
+        if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
+            raise Exception("Not supported bankbone!")
         self.backbone = set_backbone()
         self.head = PyramidPoolingModule(self.backbone.dim_out)
-        if cfg.PPM.USE_AUX and cfg.MODEL.PHASE == 'train':
+        if cfg.PPM.USE_AUX and cfg.MODEL.PHASE == 'train'and self.backbone.dim_out[0] is not None:
             self.aux = nn.Sequential(
                 nn.Conv2d(self.backbone.dim_out[0], self.head.dim_out, 3, padding=1, bias=False),
-                norm_layer(self.head.dim_out),
+                self.norm_layer(self.head.dim_out),
                 nn.ReLU(inplace=True))
         self.output = nn.Sequential(
-            nn.Dropout2d(p=dropout),
-            nn.Conv2d(self.head.dim_out, classes, kernel_size=1)
+            nn.Dropout2d(p=self.dropout),
+            nn.Conv2d(self.head.dim_out, self.classes, kernel_size=1)
         )
 
     def forward(self, x):
@@ -80,7 +90,7 @@ class PSPNet(nn.Module):
         out = self.output(c4)
         if self.zoom_factor != 1:
             out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
-        if cfg.PPM.USE_AUX and cfg.MODEL.PHASE == 'train':
+        if cfg.PPM.USE_AUX and cfg.MODEL.PHASE == 'train' and c3 is not None:
             aux_out = self.aux(c3)
             aux_out = self.output(aux_out)
             if self.zoom_factor != 1:

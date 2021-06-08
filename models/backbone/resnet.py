@@ -12,7 +12,7 @@ class BasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, dilation=1, norm_layer=nn.BatchNorm2d, downsample=None):
-        super(BasicBlock, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride,
                                padding=dilation, dilation=dilation, bias=False)
         self.bn1 = norm_layer(planes)
@@ -45,7 +45,7 @@ class Bottleneck(nn.Module):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, dilation=1, norm_layer=nn.BatchNorm2d, downsample=None):
-        super(Bottleneck, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, stride=1, bias=False)
         self.bn1 = norm_layer(planes)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, dilation=dilation, padding=dilation, bias=False)
@@ -82,7 +82,7 @@ class Bottleneck(nn.Module):
 class ResNet(nn.Module):
 
     def __init__(self, bottleneck=True, layers=(2, 2, 2, 2), base_width=64):
-        super(ResNet, self).__init__()
+        super().__init__()
         norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         output_stride = cfg.MODEL.OUTPUT_STRIDE
         head7x7 = cfg.MODEL.HEAD7X7
@@ -120,9 +120,9 @@ class ResNet(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layer1 = self._make_layer(block, base_width, layers[0])
-        self.layer2 = self._make_layer(block, base_width * 2, layers[1], 2)
-        self.layer3 = self._make_layer(block, base_width * 4, layers[2], strides[0], dilations[0])
-        self.layer4 = self._make_layer(block, base_width * 8, layers[3], strides[1], dilations[1])
+        self.layer2 = self._make_layer(block, base_width * 2, layers[1], stride=2, dilation=1)
+        self.layer3 = self._make_layer(block, base_width * 4, layers[2], stride=strides[0], dilation=dilations[0])
+        self.layer4 = self._make_layer(block, base_width * 8, layers[3], stride=strides[1], dilation=dilations[1])
         self.dim_out = [base_width * 4 * block.expansion, base_width * 8 * block.expansion]
 
         for m in self.modules():

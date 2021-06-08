@@ -12,7 +12,7 @@ class ConvBNReLU(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0,
                  dilation=1, groups=1, norm_layers=nn.BatchNorm2d):
-        super(ConvBNReLU, self).__init__()
+        super().__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride,
                               padding=padding, dilation=dilation, groups=groups, bias=False)
         self.bn = norm_layers(out_channels)
@@ -32,7 +32,7 @@ class DWConvBNReLU(nn.Module):
     """
 
     def __init__(self,  in_channels, out_channels, stride=1, padding=0, dilation=1, norm_layers=nn.BatchNorm2d):
-        super(DWConvBNReLU, self).__init__()
+        super().__init__()
         self.conv = nn.Sequential(
             ConvBNReLU(in_channels, in_channels, kernel_size=3, stride=stride, padding=padding, dilation=dilation,
                        groups=in_channels, norm_layers=norm_layers),
@@ -46,7 +46,7 @@ class DWConvBNReLU(nn.Module):
 class MobileNetV1(nn.Module):
 
     def __init__(self):
-        super(MobileNetV1, self).__init__()
+        super().__init__()
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         self.multiplier = cfg.MODEL.MULTIPLIER
@@ -71,8 +71,8 @@ class MobileNetV1(nn.Module):
 
         # building layers
         self.inplanes = channels[0]
-        self.layer1 = self._make_layers(DWConvBNReLU, channels[1], layers[0], stride=2)
-        self.layer2 = self._make_layers(DWConvBNReLU, channels[2], layers[1], stride=2)
+        self.layer1 = self._make_layers(DWConvBNReLU, channels[1], layers[0], stride=2, dilation=1)
+        self.layer2 = self._make_layers(DWConvBNReLU, channels[2], layers[1], stride=2, dilation=1)
         self.layer3 = self._make_layers(DWConvBNReLU, channels[3], layers[2], stride=strides[0], dilation=dilations[0])
         self.layer4 = self._make_layers(DWConvBNReLU, channels[4], layers[3], stride=strides[1], dilation=dilations[1])
 
@@ -104,7 +104,7 @@ class MobileNetV1(nn.Module):
         x = self.layer2(x)
         c3 = self.layer3(x)
         c4 = self.layer4(c3)
-        return c3, c4
+        return [c3, c4]
 
 
 @BACKBONE_REGISTRY.register()

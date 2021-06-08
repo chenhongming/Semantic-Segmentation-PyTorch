@@ -8,13 +8,15 @@ import _init_path
 from config.config import cfg, merge_cfg_from_file, merge_cfg_from_list, logger_cfg_from_file
 from dataset import dataset, set_augmentations
 from models.model_zone import generate_model
+from solver.loss import set_loss
+from solver.optimizer import set_optimizer
 from utils.utils import setup_logger, setup_seed
 
 
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_fcn32s.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_deeplabv3.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
@@ -47,12 +49,20 @@ def main():
     # Setup Dataloader
     val_set = dataset.JsonDataset(json_path=cfg.DATA.VAL_JSON, transform=input_transform,
                                   augmentations=input_augmentation)
-    val_loader = torch.utils.data.DataLoader(val_set, batch_size=1, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
-    # for i, (inputs, target) in enumerate(val_loader):
-    #     print(i)
+    val_loader = torch.utils.data.DataLoader(val_set, batch_size=8, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
+    print(len(val_loader))
     # Setup Model
     model = generate_model()
-    print(model)
+    # print(model)
+    # x = torch.rand([2, 3, 473, 473])
+    # o = model(x)
+    # Setup Loss
+    criterion = set_loss()
+    print(criterion)
+    # Setup Optimizer
+    optimizer = set_optimizer(model)
+    print(optimizer)
+    # Setup Scheduler
 
 
 if __name__ == '__main__':

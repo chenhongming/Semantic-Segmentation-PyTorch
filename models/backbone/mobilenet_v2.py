@@ -29,7 +29,7 @@ class InvertedResidual(nn.Module):
 
     def __init__(self, in_channels, out_channels,  expand_ratio, stride=1, padding=0,
                  dilation=1, norm_layer=nn.BatchNorm2d):
-        super(InvertedResidual, self).__init__()
+        super().__init__()
         assert stride in [1, 2]
         self.use_res_connect = stride == 1 and in_channels == out_channels
         layers = list()
@@ -57,7 +57,7 @@ class InvertedResidual(nn.Module):
 class MobileNetV2(nn.Module):
 
     def __init__(self):
-        super(MobileNetV2, self).__init__()
+        super().__init__()
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         self.multiplier = cfg.MODEL.MULTIPLIER
@@ -86,16 +86,19 @@ class MobileNetV2(nn.Module):
         self.features = [ConvBNReLU(3, input_channels, kernel_size=3, stride=2, padding=1, norm_layer=self.norm_layer)]
         # building inverted residual blocks
         self.planes = input_channels
-        self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[0:1]))
-        self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[1:2]))
-        self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[2:3]))
+        self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[0:1],
+                                              dilation=1))
+        self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[1:2],
+                                              dilation=1))
+        self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[2:3],
+                                              dilation=1))
         self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[3:5],
                                               dilation=dilations[0]))
         self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[5:],
                                               dilation=dilations[1]))
         # building last layers
         self.features.append(ConvBNReLU(self.planes, last_channels, kernel_size=1, norm_layer=self.norm_layer))
-        self.dim_out = [last_channels]
+        self.dim_out = [None, last_channels]
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
@@ -123,7 +126,7 @@ class MobileNetV2(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        return x
+        return [None, x]
 
 
 @BACKBONE_REGISTRY.register()

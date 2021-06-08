@@ -8,6 +8,11 @@ from utils.utils import set_norm
 
 
 __all__ = ['FCN32s', 'FCN16s', 'FCN8s', 'fcn32s', 'fcn16s', 'fcn8s']
+# -------------------------------------------------------------------------------------- #
+# supported backbone:
+# 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn', 'vgg19', 'vgg19_bn',
+# -------------------------------------------------------------------------------------- #
+
 
 # vgg downsampling rate = 8, 16
 model_map = {
@@ -40,11 +45,12 @@ class FCN32s(nn.Module):
 
     def __init__(self):
         super().__init__()
-        classes = cfg.DATA.CLASSES
+        #  cfg prams
+        self.classes = cfg.DATA.CLASSES
         if not cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("fcn only supported vgg backbone!")
         self.backbone = set_backbone()
-        self.head = FCNHead(self.backbone.dim_out, classes)
+        self.head = FCNHead(self.backbone.dim_out, self.classes)
 
     def forward(self, x):
         size = x.size()[2:]
@@ -58,12 +64,12 @@ class FCN16s(nn.Module):
 
     def __init__(self):
         super().__init__()
-        classes = cfg.DATA.CLASSES
+        self.classes = cfg.DATA.CLASSES
         if not cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("fcn only supported vgg backbone!")
         self.backbone = set_backbone()
-        self.head = FCNHead(self.backbone.dim_out, classes)
-        self.head_16s = nn.Conv2d(512, classes, kernel_size=1)
+        self.head = FCNHead(self.backbone.dim_out, self.classes)
+        self.head_16s = nn.Conv2d(512, self.classes, kernel_size=1)
 
     def forward(self, x):
         size = x.size()[2:]
@@ -82,13 +88,13 @@ class FCN8s(nn.Module):
 
     def __init__(self):
         super().__init__()
-        classes = cfg.DATA.CLASSES
+        self.classes = cfg.DATA.CLASSES
         if not cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("fcn only supported vgg backbone!")
         self.backbone = set_backbone()
-        self.head = FCNHead(self.backbone.dim_out, classes)
-        self.head_8s = nn.Conv2d(256, classes, kernel_size=1)
-        self.head_16s = nn.Conv2d(512, classes, kernel_size=1)
+        self.head = FCNHead(self.backbone.dim_out, self.classes)
+        self.head_8s = nn.Conv2d(256, self.classes, kernel_size=1)
+        self.head_16s = nn.Conv2d(512, self.classes, kernel_size=1)
 
     def forward(self, x):
         size = x.size()[2:]
