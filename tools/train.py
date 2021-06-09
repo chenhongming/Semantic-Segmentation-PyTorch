@@ -53,9 +53,9 @@ def main():
     print(len(val_loader))
     # Setup Model
     model = generate_model()
-    # print(model)
-    # x = torch.rand([2, 3, 473, 473])
-    # o = model(x)
+    print(model)
+    x = torch.rand([2, 3, 473, 473])
+    o = model(x)
     # Setup Loss
     criterion = set_loss()
     print(criterion)

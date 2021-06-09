@@ -157,10 +157,10 @@ class ShuffleNetV2(nn.Module):
         x = self.conv1(x)
         x = self.maxpool(x)
         x = self.stage2(x)
-        x = self.stage3(x)
-        c3 = self.stage4(x)
-        c4 = self.conv5(c3)
-        return [c3, c4]
+        c3 = self.stage3(x)
+        c4 = self.stage4(c3)
+        c5 = self.conv5(c4)
+        return [c3, c5]
 
 
 @BACKBONE_REGISTRY.register()

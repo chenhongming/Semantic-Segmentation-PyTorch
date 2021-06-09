@@ -5,7 +5,7 @@ DATA:
 
 MODEL:
   NAME: 'deeplabv3'
-  BACKBONE_NAME: 'mobilenet_v1'
+  BACKBONE_NAME: 'shufflenet_v1_g2'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'

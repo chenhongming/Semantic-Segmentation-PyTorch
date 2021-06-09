@@ -70,6 +70,7 @@ class MobileNetV2(nn.Module):
             dilations = (1, 1)
         else:
             raise AssertionError
+
         inverted_residual_setting = [
             # t, c, n, s
             [1, 16, 1, 1],

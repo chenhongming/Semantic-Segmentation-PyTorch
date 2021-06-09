@@ -62,7 +62,7 @@ _C.MODEL.PRETRAINED = True
 _C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
 # output.size * room_factor
 _C.MODEL.ROOM_FACTOR = 8
-_C.MODEL.MULTIPLIER = 1.0  # only for mobilenet backbone
+_C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone
 
 # ---------------------------------------------------------------------------- #
 # PPM options
