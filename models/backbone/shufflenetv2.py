@@ -130,7 +130,7 @@ class ShuffleNetV2(nn.Module):
             self.norm_layer(self.channels[-1]),
             nn.ReLU(inplace=True),
         )
-        self.dim_out = [self.channels[3], self.channels[-1]]
+        self.dim_out = [None, self.channels[1], self.channels[2], self.channels[-1]]
 
         # weight initialization
         for m in self.modules():
@@ -156,11 +156,11 @@ class ShuffleNetV2(nn.Module):
     def forward(self, x):
         x = self.conv1(x)
         x = self.maxpool(x)
-        x = self.stage2(x)
-        c3 = self.stage3(x)
-        c4 = self.stage4(c3)
-        c5 = self.conv5(c4)
-        return [c3, c5]
+        c3 = self.stage2(x)
+        c4 = self.stage3(c3)
+        c5 = self.stage4(c4)
+        c5 = self.conv5(c5)
+        return [None, c3, c4, c5]
 
 
 @BACKBONE_REGISTRY.register()

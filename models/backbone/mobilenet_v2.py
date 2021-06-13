@@ -99,7 +99,7 @@ class MobileNetV2(nn.Module):
                                               dilation=dilations[1]))
         # building last layers
         self.features.append(ConvBNReLU(self.planes, last_channels, kernel_size=1, norm_layer=self.norm_layer))
-        self.dim_out = [None, last_channels]
+        self.dim_out = [None, None, None, last_channels]
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
@@ -127,7 +127,7 @@ class MobileNetV2(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        return [None, x]
+        return [None, None, None, x]
 
 
 @BACKBONE_REGISTRY.register()

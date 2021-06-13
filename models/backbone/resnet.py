@@ -123,7 +123,8 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, base_width * 2, layers[1], stride=2, dilation=1)
         self.layer3 = self._make_layer(block, base_width * 4, layers[2], stride=strides[0], dilation=dilations[0])
         self.layer4 = self._make_layer(block, base_width * 8, layers[3], stride=strides[1], dilation=dilations[1])
-        self.dim_out = [base_width * 4 * block.expansion, base_width * 8 * block.expansion]
+        self.dim_out = [base_width * block.expansion, base_width * 2 * block.expansion,
+                        base_width * 4 * block.expansion, base_width * 8 * block.expansion]
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -173,12 +174,12 @@ class ResNet(nn.Module):
             x = self.relu(x)
         x = self.maxpool(x)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        c3 = self.layer3(x)
-        c4 = self.layer4(c3)
+        c2 = self.layer1(x)
+        c3 = self.layer2(c2)
+        c4 = self.layer3(c3)
+        c5 = self.layer4(c4)
 
-        return [c3, c4]
+        return [c2, c3, c4, c5]
 
 
 @BACKBONE_REGISTRY.register()

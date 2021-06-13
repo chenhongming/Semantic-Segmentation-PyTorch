@@ -5,7 +5,7 @@ DATA:
 
 MODEL:
   NAME: 'psp'
-  BACKBONE_NAME: 'mobilenet_v1'
+  BACKBONE_NAME: 'shufflenet_v2_x2_0'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'

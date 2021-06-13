@@ -98,10 +98,10 @@ class DeepLabV3(nn.Module):
         if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("Not supported bankbone!")
         self.backbone = set_backbone()
-        self.head = ASPP(self.backbone.dim_out[1])
-        if cfg.ASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[0] is not None:
+        self.head = ASPP(self.backbone.dim_out[-1])
+        if cfg.ASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
             self.aux = nn.Sequential(
-                nn.Conv2d(self.backbone.dim_out[0], self.head.dim_out, 3, padding=1, bias=False),
+                nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, 3, padding=1, bias=False),
                 self.norm_layer(self.head.dim_out),
                 nn.ReLU(inplace=True))
         self.output = nn.Sequential(
@@ -115,13 +115,13 @@ class DeepLabV3(nn.Module):
         h = int((size[0] - 1) / 8 * self.zoom_factor + 1)
         w = int((size[1] - 1) / 8 * self.zoom_factor + 1)
 
-        c3, c4 = self.backbone(x)
-        c4 = self.head(c4)
-        out = self.output(c4)
+        _, _, c4, c5 = self.backbone(x)
+        c5 = self.head(c5)
+        out = self.output(c5)
         if self.zoom_factor != 1:
             out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
-        if cfg.ASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and c3 is not None:
-            aux_out = self.aux(c3)
+        if cfg.ASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
+            aux_out = self.aux(c4)
             aux_out = self.output(aux_out)
             if self.zoom_factor != 1:
                 aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)

@@ -119,7 +119,8 @@ class ShufflenetV1(nn.Module):
                                        stride=strides[0], dilation=dilations[0])
         self.stage4 = self._make_stage(InvertedResidual, self.channels[2], self.stages_repeats[2],
                                        stride=strides[1], dilation=dilations[1])
-        self.dim_out = [self.channels[1], self.channels[-1]]
+        self.channels.insert(0, None)
+        self.dim_out = self.channels
 
         # weight initialization
         for m in self.modules():
@@ -146,10 +147,10 @@ class ShufflenetV1(nn.Module):
     def forward(self, x):
         x = self.conv1(x)
         x = self.maxpool(x)
-        x = self.stage2(x)
-        c3 = self.stage3(x)
-        c4 = self.stage4(c3)
-        return [c3, c4]
+        c3 = self.stage2(x)
+        c4 = self.stage3(c3)
+        c5 = self.stage4(c4)
+        return [None, c3, c4, c5]
 
 
 @BACKBONE_REGISTRY.register()

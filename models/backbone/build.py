@@ -36,8 +36,6 @@ model_urls = {
 
     'shufflenet_v2_x0_5': 'https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth',
     'shufflenet_v2_x1_0': 'https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth',
-    'shufflenet_v2_x1_5': None,
-    'shufflenet_v2_x2_0': None,
 }
 
 
