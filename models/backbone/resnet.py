@@ -1,18 +1,24 @@
 # modified from torchvision.models.resnet
+
 import torch.nn as nn
 
 from .build import BACKBONE_REGISTRY
 from config.config import cfg
 from utils.utils import set_norm
 
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152']
+__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
+           'resnext50_32x4d', 'resnext101_32x8d', 'wide_resnet50_2', 'wide_resnet101_2']
 
 
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, dilation=1, norm_layer=nn.BatchNorm2d, downsample=None):
+    def __init__(self, inplanes, planes, stride=1, dilation=1, groups=1,
+                 base_width=64, norm_layer=nn.BatchNorm2d, downsample=None):
         super().__init__()
+        if groups != 1 or base_width != 64:
+            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride,
                                padding=dilation, dilation=dilation, bias=False)
         self.bn1 = norm_layer(planes)
@@ -44,13 +50,17 @@ class BasicBlock(nn.Module):
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, dilation=1, norm_layer=nn.BatchNorm2d, downsample=None):
+    def __init__(self, inplanes, planes, stride=1, dilation=1, groups=1,
+                 base_width=64, norm_layer=nn.BatchNorm2d, downsample=None):
         super().__init__()
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, stride=1, bias=False)
-        self.bn1 = norm_layer(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, dilation=dilation, padding=dilation, bias=False)
-        self.bn2 = norm_layer(planes)
-        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, stride=1, bias=False)
+        width = int(planes * (base_width / 64.)) * groups
+
+        self.conv1 = nn.Conv2d(inplanes, width, kernel_size=1, stride=1, bias=False)
+        self.bn1 = norm_layer(width)
+        self.conv2 = nn.Conv2d(width, width, kernel_size=3, stride=stride, dilation=dilation,
+                               padding=dilation, groups=groups, bias=False)
+        self.bn2 = norm_layer(width)
+        self.conv3 = nn.Conv2d(width, planes * self.expansion, kernel_size=1, stride=1, bias=False)
         self.bn3 = norm_layer(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
@@ -81,7 +91,7 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, bottleneck=True, layers=(2, 2, 2, 2), base_width=64):
+    def __init__(self, bottleneck=True, layers=(2, 2, 2, 2), groups=1, width_per_group=64):
         super().__init__()
         norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         output_stride = cfg.MODEL.OUTPUT_STRIDE
@@ -103,7 +113,9 @@ class ResNet(nn.Module):
         else:
             raise AssertionError
 
-        self.inplanes = base_width  # default 64
+        self.inplanes = 64  # default 64
+        self.groups = groups
+        self.base_width = width_per_group
         self.head7x7 = head7x7
         self.norm_layer = norm_layer
         if self.head7x7:
@@ -119,12 +131,12 @@ class ResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(block, base_width, layers[0])
-        self.layer2 = self._make_layer(block, base_width * 2, layers[1], stride=2, dilation=1)
-        self.layer3 = self._make_layer(block, base_width * 4, layers[2], stride=strides[0], dilation=dilations[0])
-        self.layer4 = self._make_layer(block, base_width * 8, layers[3], stride=strides[1], dilation=dilations[1])
-        self.dim_out = [base_width * block.expansion, base_width * 2 * block.expansion,
-                        base_width * 4 * block.expansion, base_width * 8 * block.expansion]
+        self.layer1 = self._make_layer(block, 64, layers[0])
+        self.layer2 = self._make_layer(block, 64 * 2, layers[1], stride=2, dilation=1)
+        self.layer3 = self._make_layer(block, 64 * 4, layers[2], stride=strides[0], dilation=dilations[0])
+        self.layer4 = self._make_layer(block, 64 * 8, layers[3], stride=strides[1], dilation=dilations[1])
+        self.dim_out = [64 * block.expansion, 64 * 2 * block.expansion,
+                        64 * 4 * block.expansion, 64 * 8 * block.expansion]
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -150,10 +162,11 @@ class ResNet(nn.Module):
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, dilation, self.norm_layer, downsample))
+        layers.append(block(self.inplanes, planes, stride, dilation, self.groups, self.base_width, self.norm_layer,
+                            downsample))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, 1, dilation, self.norm_layer))
+            layers.append(block(self.inplanes, planes, 1, dilation, self.groups, self.base_width, self.norm_layer))
 
         return nn.Sequential(*layers)
 
@@ -236,3 +249,50 @@ def resnet152():
     """
     return ResNet(bottleneck=True, layers=(3, 8, 36, 3))
 
+
+@BACKBONE_REGISTRY.register()
+def resnext50_32x4d():
+    r"""ResNeXt-50 32x4d model from
+    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
+    """
+    groups = 32
+    width_per_group = 4
+    return ResNet(bottleneck=True, layers=(3, 4, 6, 3), groups=groups, width_per_group=width_per_group)
+
+
+@BACKBONE_REGISTRY.register()
+def resnext101_32x8d():
+    r"""ResNeXt-101 32x8d model from
+    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
+    """
+    groups = 32
+    width_per_group = 8
+    return ResNet(bottleneck=True, layers=(3, 4, 23, 3), groups=groups, width_per_group=width_per_group)
+
+
+@BACKBONE_REGISTRY.register()
+def wide_resnet50_2():
+    r"""Wide ResNet-50-2 model from
+    `"Wide Residual Networks" <https://arxiv.org/pdf/1605.07146.pdf>`_
+
+    The model is the same as ResNet except for the bottleneck number of channels
+    which is twice larger in every block. The number of channels in outer 1x1
+    convolutions is the same, e.g. last block in ResNet-50 has 2048-512-2048
+    channels, and in Wide ResNet-50-2 has 2048-1024-2048.
+    """
+    width_per_group = 64 * 2
+    return ResNet(bottleneck=True, layers=(3, 4, 6, 3), width_per_group=width_per_group)
+
+
+@BACKBONE_REGISTRY.register()
+def wide_resnet101_2():
+    r"""Wide ResNet-101-2 model from
+    `"Wide Residual Networks" <https://arxiv.org/pdf/1605.07146.pdf>`_
+
+    The model is the same as ResNet except for the bottleneck number of channels
+    which is twice larger in every block. The number of channels in outer 1x1
+    convolutions is the same, e.g. last block in ResNet-50 has 2048-512-2048
+    channels, and in Wide ResNet-50-2 has 2048-1024-2048.
+    """
+    width_per_group = 64 * 2
+    return ResNet(bottleneck=True, layers=(3, 4, 23, 3), width_per_group=width_per_group)

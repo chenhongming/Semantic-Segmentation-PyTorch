@@ -61,11 +61,12 @@ _C.MODEL.NAME = 'psp'
 _C.MODEL.PRETRAINED = True
 _C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
 # output.size * room_factor
-_C.MODEL.ROOM_FACTOR = 8
+_C.MODEL.ZOOM_FACTOR = 8
 _C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone
+_C.MODEL.DROP_RATE = 0.1  # for densenet
 
 # ---------------------------------------------------------------------------- #
-# PPM options
+# PSP(PPM) options
 # ---------------------------------------------------------------------------- #
 # supported backbone: resnet mobilenetv1 mobilenetv2 shufflenetv2
 _C.PPM = CN()
@@ -84,7 +85,7 @@ _C.FCN = CN()
 _C.FCN.DROP_OUT = 0.1
 
 # ---------------------------------------------------------------------------- #
-# ASPP options
+# deeplabv3(ASPP) options
 # ---------------------------------------------------------------------------- #
 # supported backbone: resnet mobilenetv1 mobilenetv2 shufflenetv2
 _C.ASPP = CN()
@@ -92,6 +93,33 @@ _C.ASPP.OUTPUT_STRIDE = 8  # 8 or 16
 _C.ASPP.OUT_CHANNELS = 512
 _C.ASPP.DROPOUT = 0.5
 _C.ASPP.USE_AUX = True  # c3 must be not None if USE_AUX is True
+
+# ---------------------------------------------------------------------------- #
+# deeplabv3plus options
+# ---------------------------------------------------------------------------- #
+_C.DEEPLABV3PLUS = CN()
+_C.DEEPLABV3PLUS.LOW_LEVEL_FEATURE_CHANNELS = 48  # 48 or 32
+_C.DEEPLABV3PLUS.OUTPUT_STRIDE = 16  # only 16 for deeplabv3plus
+_C.DEEPLABV3PLUS.USE_AUX = True
+_C.DEEPLABV3PLUS.DROPOUT = 0.1
+
+# ---------------------------------------------------------------------------- #
+# lraspp options
+# ---------------------------------------------------------------------------- #
+_C.LRASPP = CN()
+_C.LRASPP.OUTPUT_STRIDE = 8
+_C.LRASPP.INTER_CHANNELS = 128  # default
+
+# ---------------------------------------------------------------------------- #
+# denseaspp options
+# ---------------------------------------------------------------------------- #
+_C.DENSEASPP = CN()
+_C.DENSEASPP.OUTPUT_STRIDE = 8
+_C.DENSEASPP.INTER_CHANNELS = 256  # default
+_C.DENSEASPP.OUT_CHANNELS = 64  # default
+_C.DENSEASPP.ATROUS_RATE = [3, 6, 12, 18, 24]  # default
+_C.DENSEASPP.DROP_RATE = 0.1
+_C.DENSEASPP.USE_AUX = True
 
 # ---------------------------------------------------------------------------- #
 # SOLVER options

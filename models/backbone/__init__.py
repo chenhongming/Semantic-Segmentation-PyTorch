@@ -1,5 +1,6 @@
 from .vgg import *
 from .resnet import *
+from .densenet import *
 from .mobilenet_v1 import *
 from .mobilenet_v2 import *
 from .shufflenetv1 import *

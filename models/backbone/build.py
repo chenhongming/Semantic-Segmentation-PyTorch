@@ -1,6 +1,6 @@
+import re
 import os
 import torch
-import logging
 from collections import OrderedDict
 from torch.hub import load_state_dict_from_url as load_url  # noqa: F401
 
@@ -36,6 +36,11 @@ model_urls = {
 
     'shufflenet_v2_x0_5': 'https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth',
     'shufflenet_v2_x1_0': 'https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth',
+
+    'densenet121': 'https://download.pytorch.org/models/densenet121-a639ec97.pth',
+    'densenet169': 'https://download.pytorch.org/models/densenet169-b2777c0a.pth',
+    'densenet201': 'https://download.pytorch.org/models/densenet201-c1103571.pth',
+    'densenet161': 'https://download.pytorch.org/models/densenet161-8d451a50.pth',
 }
 
 
@@ -54,6 +59,8 @@ def load_pretrain_backbone(backbone, backbone_name):
     if os.path.isfile(pretrained_file) and os.path.splitext(pretrained_file)[-1] == '.pth':
         logger.info("Load backbone pretrained model from {}".format(cfg.MODEL.BACKBONE_WEIGHT))
         ckpt = torch.load(pretrained_file)
+        if backbone_name.startswith('densenet'):
+            ckpt = _load_densenet_dict(ckpt)
         backbone_dict = backbone.state_dict()
         matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
         logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
@@ -65,6 +72,8 @@ def load_pretrain_backbone(backbone, backbone_name):
         if os.path.isfile(cached_file) and os.path.splitext(cached_file)[-1] == '.pth':
             logger.info("Load backbone pretrained model from {}".format(cached_file))
             ckpt = torch.load(cached_file)
+            if backbone_name.startswith('densenet'):
+                ckpt = _load_densenet_dict(ckpt)
             backbone_dict = backbone.state_dict()
             matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
             logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
@@ -74,6 +83,8 @@ def load_pretrain_backbone(backbone, backbone_name):
             logger.info("Load backbone pretrained model from url {}".format(model_urls[backbone_name]))
             try:
                 ckpt = load_url(model_urls[backbone_name])
+                if backbone_name.startswith('densenet'):
+                    ckpt = _load_densenet_dict(ckpt)
                 backbone_dict = backbone.state_dict()
                 matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
                 logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
@@ -99,3 +110,21 @@ def weight_filler(ckpt_dict, model_dict):
         else:
             unmatched_weights.append(k)
     return matched_weights, unmatched_weights
+
+
+# modified from torchvision.models.densenet.py
+def _load_densenet_dict(state_dict):
+    # '.'s are no longer allowed in module names, but previous _DenseLayer
+    # has keys 'norm.1', 'relu.1', 'conv.1', 'norm.2', 'relu.2', 'conv.2'.
+    # They are also in the checkpoints in model_urls. This pattern is used
+    # to find such keys.
+    pattern = re.compile(
+        r'^(.*denselayer\d+\.(?:norm|relu|conv))\.((?:[12])\.(?:weight|bias|running_mean|running_var))$')
+
+    for key in list(state_dict.keys()):
+        res = pattern.match(key)
+        if res:
+            new_key = res.group(1) + res.group(2)
+            state_dict[new_key] = state_dict[key]
+            del state_dict[key]
+    return state_dict

@@ -14,7 +14,7 @@ __all__ = ['FCN32s', 'FCN16s', 'FCN8s', 'fcn32s', 'fcn16s', 'fcn8s']
 # -------------------------------------------------------------------------------------- #
 
 
-# vgg downsampling rate = 8, 16
+# vgg downsampling rate = 8, 16 layer pos
 model_map = {
     'vgg11': [10, 15],
     'vgg11_bn': [14, 21],
@@ -49,6 +49,7 @@ class FCN32s(nn.Module):
         self.classes = cfg.DATA.CLASSES
         if not cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("fcn only supported vgg backbone!")
+
         self.backbone = set_backbone()
         self.head = FCNHead(self.backbone.dim_out, self.classes)
 
@@ -64,9 +65,11 @@ class FCN16s(nn.Module):
 
     def __init__(self):
         super().__init__()
+
         self.classes = cfg.DATA.CLASSES
         if not cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("fcn only supported vgg backbone!")
+
         self.backbone = set_backbone()
         self.head = FCNHead(self.backbone.dim_out, self.classes)
         self.head_16s = nn.Conv2d(512, self.classes, kernel_size=1)
@@ -88,9 +91,11 @@ class FCN8s(nn.Module):
 
     def __init__(self):
         super().__init__()
+
         self.classes = cfg.DATA.CLASSES
         if not cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("fcn only supported vgg backbone!")
+
         self.backbone = set_backbone()
         self.head = FCNHead(self.backbone.dim_out, self.classes)
         self.head_8s = nn.Conv2d(256, self.classes, kernel_size=1)

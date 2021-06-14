@@ -7,7 +7,7 @@ from models.backbone.build import set_backbone
 from models.model_zone import MODEL_REGISTRY
 from utils.utils import set_norm
 
-__all__ = ['DeepLabV3', 'deeplabv3']
+__all__ = ['DeepLabV3', 'deeplabv3', 'ASPP']
 # -------------------------------------------------------------------------------------- #
 # supported backbone:
 # 'mobilenet_v1' (multiplier=0.5, 1.0, 1.5, 2.0)
@@ -16,6 +16,7 @@ __all__ = ['DeepLabV3', 'deeplabv3']
 # 'shufflenet_v1_g1', 'shufflenet_v1_g2', 'shufflenet_v1_g3',
 # 'shufflenet_v1_g4', 'shufflenet_v1_g8' (multiplier=0.5, 1.0, 1.5, 2.0)
 # 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0'
+# 'densenet121', 'densenet161', 'densenet169', 'densenet201'
 # -------------------------------------------------------------------------------------- #
 
 
@@ -49,34 +50,32 @@ class ASPPPooling(nn.Sequential):
 
 class ASPP(nn.Module):
 
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, out_channels, output_stride, norm_layer):
         super().__init__()
-        self.output_stride = cfg.ASPP.OUTPUT_STRIDE
-        self.out_channels = cfg.ASPP.OUT_CHANNELS  # default 512
-        self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
-        if self.output_stride == 8:
+
+        if output_stride == 8:
             atrous_rate = [12, 24, 36]
-        elif self.output_stride == 16:
+        elif output_stride == 16:
             atrous_rate = [6, 12, 18]
         else:
             raise Exception("output_stride only supported 8 or 16!")
         modules = list()
         modules.append(nn.Sequential(
-            nn.Conv2d(in_channels, self.out_channels, kernel_size=1, bias=False),
-            self.norm_layer(self.out_channels),
+            nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False),
+            norm_layer(out_channels),
             nn.ReLU(True)
         ))
         for rate in tuple(atrous_rate):
-            modules.append(ASPPConv(in_channels, self.out_channels, rate))
-        modules.append(ASPPPooling(in_channels, self.out_channels))
+            modules.append(ASPPConv(in_channels, out_channels, rate))
+        modules.append(ASPPPooling(in_channels, out_channels))
 
         self.convs = nn.ModuleList(modules)
         self.porject = nn.Sequential(
-            nn.Conv2d(len(self.convs) * self.out_channels, self.out_channels, kernel_size=1, bias=False),
-            self.norm_layer(self.out_channels),
+            nn.Conv2d(len(self.convs) * out_channels, out_channels, kernel_size=1, bias=False),
+            norm_layer(out_channels),
             nn.ReLU(True),
         )
-        self.dim_out = self.out_channels
+        self.dim_out = out_channels
 
     def forward(self, x):
         res = list()
@@ -90,18 +89,22 @@ class DeepLabV3(nn.Module):
 
     def __init__(self):
         super().__init__()
+
         self.classes = cfg.DATA.CLASSES
-        self.zoom_factor = cfg.MODEL.ROOM_FACTOR
+        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
+        self.output_stride = cfg.ASPP.OUTPUT_STRIDE
+        self.out_channels = cfg.ASPP.OUT_CHANNELS  # default 512
         self.dropout = cfg.ASPP.DROPOUT
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
+        assert self.zoom_factor in [1, 2, 4, 8]
 
         if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("Not supported bankbone!")
         self.backbone = set_backbone()
-        self.head = ASPP(self.backbone.dim_out[-1])
+        self.head = ASPP(self.backbone.dim_out[-1], self.out_channels, self.output_stride, self.norm_layer)
         if cfg.ASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
             self.aux = nn.Sequential(
-                nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, 3, padding=1, bias=False),
+                nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, kernel_size=3, padding=1, bias=False),
                 self.norm_layer(self.head.dim_out),
                 nn.ReLU(inplace=True))
         self.output = nn.Sequential(

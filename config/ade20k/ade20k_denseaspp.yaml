@@ -4,8 +4,8 @@ DATA:
   CLASSES: 21
 
 MODEL:
-  NAME: 'psp'
-  BACKBONE_NAME: 'wide_resnet50_2'
+  NAME: 'denseaspp'
+  BACKBONE_NAME: 'densenet121'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'
@@ -14,12 +14,17 @@ MODEL:
   FINETUNE: False
   PRETRAINED: True
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"
-  ZOOM_FACTOR: 1
   OUTPUT_STRIDE: 8
+  ZOOM_FACTOR: 1
 
-PPM:
-  POOL_SCALES: (1, 2, 3, 6)
-  USE_AUX: False
+
+DENSEASPP:
+  OUTPUT_STRIDE: 8
+  INTER_CHANNELS: 256
+  OUT_CHANNELS: 64
+  ATROUS_RATE: [3, 6, 12, 18, 24]
+  DROP_RATE: 0.1
+  USE_AUX: True
 
 GPU_USE: True
 GPU_IDS: u'0,1'

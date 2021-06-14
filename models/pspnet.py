@@ -16,31 +16,28 @@ __all__ = ['PSPNet', 'psp']
 # 'shufflenet_v1_g1', 'shufflenet_v1_g2', 'shufflenet_v1_g3',
 # 'shufflenet_v1_g4', 'shufflenet_v1_g8' (multiplier=0.5, 1.0, 1.5, 2.0)
 # 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0'
+# 'densenet121', 'densenet161', 'densenet169', 'densenet201'
 # -------------------------------------------------------------------------------------- #
 
 
 class PyramidPoolingModule(nn.Module):
 
-    def __init__(self, dim_in):
+    def __init__(self, dim_in, ppm_hidden_dim, ppm_out_dim, norm_layer):
         super().__init__()
-        ppm_hidden_dim = cfg.PPM.PPM_HIDDEN_DIM  # default: 512
-        ppm_out_dim = cfg.PPM.PPM_OUT_DIM
-        norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
 
-        self.dim_in = dim_in
         self.ppm = []
         for scale in cfg.PPM.POOL_SCALES:
             self.ppm.append(nn.Sequential(
                 nn.AdaptiveAvgPool2d(scale),
-                nn.Conv2d(self.dim_in, ppm_hidden_dim, kernel_size=1, bias=False),
+                nn.Conv2d(dim_in, ppm_hidden_dim, kernel_size=1, bias=False),
                 norm_layer(ppm_hidden_dim),
                 nn.ReLU(inplace=True)
             ))
         self.ppm = nn.ModuleList(self.ppm)
-        self.dim_in = self.dim_in + len(cfg.PPM.POOL_SCALES) * ppm_hidden_dim
+        dim_in = dim_in + len(cfg.PPM.POOL_SCALES) * ppm_hidden_dim
 
         self.conv_last = nn.Sequential(
-            nn.Conv2d(self.dim_in, ppm_out_dim, kernel_size=3, padding=1, bias=False),
+            nn.Conv2d(dim_in, ppm_out_dim, kernel_size=3, padding=1, bias=False),
             norm_layer(ppm_out_dim),
             nn.ReLU(inplace=True)
         )
@@ -60,16 +57,20 @@ class PSPNet(nn.Module):
 
     def __init__(self):
         super().__init__()
+
         self.dropout = cfg.PPM.DROP_OUT
         self.classes = cfg.DATA.CLASSES
+        self.ppm_hidden_dim = cfg.PPM.PPM_HIDDEN_DIM  # default: 512
+        self.ppm_out_dim = cfg.PPM.PPM_OUT_DIM
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
-        self.zoom_factor = cfg.MODEL.ROOM_FACTOR
+        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
         assert self.zoom_factor in [1, 2, 4, 8]
 
         if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("Not supported bankbone!")
         self.backbone = set_backbone()
-        self.head = PyramidPoolingModule(self.backbone.dim_out[-1])
+        self.head = PyramidPoolingModule(self.backbone.dim_out[-1], self.ppm_hidden_dim,
+                                         self.ppm_out_dim, self.norm_layer)
         if cfg.PPM.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
             self.aux = nn.Sequential(
                 nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, 3, padding=1, bias=False),
