@@ -14,6 +14,7 @@ __all__ = ['DenseASPP', 'denseaspp']
 # supported backbone:
 # 'mobilenet_v1' (multiplier=0.5, 1.0, 1.5, 2.0)
 # 'mobilenet_v2' (multiplier=0.5, 1.0, 1.5, 2.0)
+# 'mnasnet0_5', 'mnasnet0_75', 'mnasnet1_0', 'mnasnet1_3'
 # 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
 # 'shufflenet_v1_g1', 'shufflenet_v1_g2', 'shufflenet_v1_g3',
 # 'shufflenet_v1_g4', 'shufflenet_v1_g8' (multiplier=0.5, 1.0, 1.5, 2.0)

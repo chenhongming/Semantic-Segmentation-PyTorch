@@ -3,5 +3,7 @@ from .resnet import *
 from .densenet import *
 from .mobilenet_v1 import *
 from .mobilenet_v2 import *
+from .mobilenet_v3 import *
 from .shufflenetv1 import *
 from .shufflenetv2 import *
+from .mnasnet import *

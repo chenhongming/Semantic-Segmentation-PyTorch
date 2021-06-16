@@ -10,13 +10,16 @@ __all__ = ['MobileNetV2', 'mobilenet_v2']
 
 class ConvBNActivation(nn.Sequential):
 
-    def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0,
-                 dilation=1, groups=1, norm_layer=nn.BatchNorm2d):
+    def __init__(self, in_channels, out_channels, kernel_size=1, stride=1,
+                 dilation=1, groups=1, norm_layer=nn.BatchNorm2d, activation_layer=None):
+        padding = (kernel_size * dilation - dilation) // 2
+        if activation_layer is None:
+            activation_layer = nn.ReLU6
         super(ConvBNReLU, self).__init__(
             nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride,
                       padding=padding, dilation=dilation, groups=groups, bias=False),
             norm_layer(out_channels),
-            nn.ReLU6(True),
+            activation_layer(True),
         )
         self.out_channels = out_channels
 
@@ -27,7 +30,7 @@ ConvBNReLU = ConvBNActivation
 
 class InvertedResidual(nn.Module):
 
-    def __init__(self, in_channels, out_channels,  expand_ratio, stride=1, padding=0,
+    def __init__(self, in_channels, out_channels,  expand_ratio, stride=1,
                  dilation=1, norm_layer=nn.BatchNorm2d):
         super().__init__()
         assert stride in [1, 2]
@@ -39,7 +42,7 @@ class InvertedResidual(nn.Module):
             layers.append(ConvBNReLU(in_channels, hidden_dim, kernel_size=1, stride=1, norm_layer=norm_layer))
         layers.extend([
             # dw
-            ConvBNReLU(hidden_dim, hidden_dim, kernel_size=3, stride=stride, padding=padding, dilation=dilation,
+            ConvBNReLU(hidden_dim, hidden_dim, kernel_size=3, stride=stride, dilation=dilation,
                        groups=hidden_dim, norm_layer=norm_layer),
             # pw-linear
             nn.Conv2d(hidden_dim, out_channels, kernel_size=1, stride=1, bias=False),
@@ -84,7 +87,7 @@ class MobileNetV2(nn.Module):
         # building first layer
         input_channels = int(32 * self.multiplier if self.multiplier > 1.0 else 32)
         last_channels = int(1280 * self.multiplier if self.multiplier > 1.0 else 1280)
-        self.features = [ConvBNReLU(3, input_channels, kernel_size=3, stride=2, padding=1, norm_layer=self.norm_layer)]
+        self.features = [ConvBNReLU(3, input_channels, kernel_size=3, stride=2, norm_layer=self.norm_layer)]
         # building inverted residual blocks
         self.planes = input_channels
         self.features.extend(self._make_layer(InvertedResidual, self.planes, inverted_residual_setting[0:1],
@@ -119,8 +122,8 @@ class MobileNetV2(nn.Module):
             out_channels = int(c * self.multiplier)
             for i in range(n):
                 stride = s if i == 0 and dilation == 1 else 1
-                features.append(block(planes, out_channels, t, stride=stride, dilation=dilation,
-                                      padding=dilation, norm_layer=self.norm_layer))
+                features.append(block(planes, out_channels, t, stride=stride,
+                                      dilation=dilation, norm_layer=self.norm_layer))
                 planes = out_channels
         self.planes = planes
         return features
