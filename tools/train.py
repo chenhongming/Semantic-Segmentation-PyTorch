@@ -17,7 +17,7 @@ from utils.utils import setup_logger, setup_seed
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_psp.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_bisenet.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
@@ -48,21 +48,29 @@ def main():
     ])
     input_augmentation = set_augmentations(cfg)
     # Setup Dataloader
-    val_set = dataset.JsonDataset(json_path=cfg.DATA.VAL_JSON, transform=input_transform,
-                                  augmentations=input_augmentation)
-    val_loader = torch.utils.data.DataLoader(val_set, batch_size=8, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
+    train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON, transform=input_transform,
+                                    augmentations=input_augmentation)
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=8, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
     # Setup Model
     model = generate_model()
-    print(model)
-    x = torch.rand([2, 3, 65, 65])
+    logger.info("Training model:\n\033[1;34m{} \033[0m".format(model))
+    x = torch.rand((2, 3, 512, 512))
     o = model(x)
-    print(o.size())
+    print(o[0].size())
     # Setup Loss
     criterion = set_loss()
     # Setup Optimizer
     optimizer = set_optimizer(model)
     # Setup Scheduler
     scheduler = set_scheduler(optimizer)
+
+    # main loop
+    for epoch in range(1, cfg.TRAIN.EPOCHS+1):
+        train(model, train_loader, criterion, optimizer, scheduler, epoch)
+
+
+def train(model, loader, criterion, optimizer, scheduler, epoch):
+    pass
 
 
 if __name__ == '__main__':

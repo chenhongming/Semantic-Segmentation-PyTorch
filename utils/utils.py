@@ -36,4 +36,3 @@ def set_norm(norm):
         return torch.nn.SyncBatchNorm
     else:
         raise AttributeError
-

@@ -6,7 +6,7 @@ from functools import partial
 
 from .build import BACKBONE_REGISTRY
 from .op import _make_divisible
-from .mobilenet_v2 import ConvBNActivation
+from .module import ConvBNActivation
 from config.config import cfg
 from utils.utils import set_norm
 

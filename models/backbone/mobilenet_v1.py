@@ -11,11 +11,11 @@ __all__ = ['MobileNetV1', 'mobilenet_v1']
 class ConvBNReLU(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0,
-                 dilation=1, groups=1, norm_layers=nn.BatchNorm2d):
+                 dilation=1, groups=1, norm_layer=nn.BatchNorm2d):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride,
                               padding=padding, dilation=dilation, groups=groups, bias=False)
-        self.bn = norm_layers(out_channels)
+        self.bn = norm_layer(out_channels)
         self.relu = nn.ReLU(True)
 
     def forward(self, x):
@@ -31,12 +31,12 @@ class DWConvBNReLU(nn.Module):
     depthwise convolution + pointwise convolution
     """
 
-    def __init__(self,  in_channels, out_channels, stride=1, padding=0, dilation=1, norm_layers=nn.BatchNorm2d):
+    def __init__(self,  in_channels, out_channels, stride=1, padding=0, dilation=1, norm_layer=nn.BatchNorm2d):
         super().__init__()
         self.conv = nn.Sequential(
             ConvBNReLU(in_channels, in_channels, kernel_size=3, stride=stride, padding=padding, dilation=dilation,
-                       groups=in_channels, norm_layers=norm_layers),
-            ConvBNReLU(in_channels, out_channels, kernel_size=1, norm_layers=norm_layers)
+                       groups=in_channels, norm_layer=norm_layer),
+            ConvBNReLU(in_channels, out_channels, kernel_size=1, norm_layer=norm_layer)
         )
 
     def forward(self, x):
@@ -66,7 +66,7 @@ class MobileNetV1(nn.Module):
         in_channel = int(32 * self.multiplier if self.multiplier > 1.0 else 32)
         channels = [int(ch * self.multiplier) for ch in [64, 128, 256, 512, 1024]]
         layers = [2, 2, 6, 2]
-        self.conv1 = ConvBNReLU(3, in_channel, kernel_size=3, stride=2, padding=1, norm_layers=self.norm_layer)
+        self.conv1 = ConvBNReLU(3, in_channel, kernel_size=3, stride=2, padding=1, norm_layer=self.norm_layer)
         self.conv2 = DWConvBNReLU(in_channel, channels[0], padding=1, dilation=1)
 
         # building layers
@@ -90,11 +90,11 @@ class MobileNetV1(nn.Module):
     def _make_layers(self, block, planes, blocks, stride=1, dilation=1):
         layers = list()
         layers.append(block(self.inplanes, planes, stride=stride, padding=dilation,
-                            dilation=dilation, norm_layers=self.norm_layer))
+                            dilation=dilation, norm_layer=self.norm_layer))
         self.inplanes = planes
         for i in range(1, blocks):
             layers.append(block(self.inplanes, planes, stride=1, padding=dilation,
-                                dilation=dilation, norm_layers=self.norm_layer))
+                                dilation=dilation, norm_layer=self.norm_layer))
         return nn.Sequential(*layers)
 
     def forward(self, x):

@@ -43,6 +43,7 @@ _C.TRAIN.CROP_SIZE = 512
 _C.TRAIN.ROTATE = (-10, 10)
 _C.TRAIN.PADDING = (0, 0, 0)
 _C.TRAIN.IGNORE_LABEL = 255
+_C.TRAIN.EPOCHS = 100
 
 # ---------------------------------------------------------------------------- #
 # Model options
@@ -120,6 +121,16 @@ _C.DENSEASPP.OUT_CHANNELS = 64  # default
 _C.DENSEASPP.ATROUS_RATE = [3, 6, 12, 18, 24]  # default
 _C.DENSEASPP.DROP_RATE = 0.1
 _C.DENSEASPP.USE_AUX = True
+
+# ---------------------------------------------------------------------------- #
+# bisenet options
+# ---------------------------------------------------------------------------- #
+_C.BISENET = CN()
+_C.BISENET.IN_CHANNELS = 3
+_C.BISENET.SPATIAL_PATH_OUT_CHANNELS = 128
+_C.BISENET.CONTEXT_PATH_OUT_CHANNELS = 128
+_C.BISENET.DROP_RATE = 0.1
+_C.BISENET.USE_AUX = True
 
 # ---------------------------------------------------------------------------- #
 # SOLVER options

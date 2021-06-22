@@ -1,0 +1,23 @@
+DATA:
+  TRAIN_JSON: ADEChallengeData2016/train.json
+  VAL_JSON: ADEChallengeData2016/val.json
+  CLASSES: 21
+
+MODEL:
+  NAME: 'bisenet'
+  BACKBONE_NAME: 'mobilenet_v1'
+  BACKBONE_PRETRAINED: True
+  BACKBONE_WEIGHT: "pretrained/"
+  NORM_LAYER: 'bn'
+  PHASE: 'train'
+  RESUME: False
+  FINETUNE: False
+  PRETRAINED: True
+  MODEL_WEIGHT: "ckpts/ade20k/model.pth"
+  OUTPUT_STRIDE: 32
+
+BISENET:
+  USE_AUX: True
+
+GPU_USE: True
+GPU_IDS: u'0,1'
