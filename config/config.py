@@ -1,6 +1,5 @@
 import os
 from yacs.config import CfgNode as CN
-from utils.utils import root_path
 
 # ----------------------------------------------------------------------------------- #
 # Config definition
@@ -43,7 +42,8 @@ _C.TRAIN.CROP_SIZE = 512
 _C.TRAIN.ROTATE = (-10, 10)
 _C.TRAIN.PADDING = (0, 0, 0)
 _C.TRAIN.IGNORE_LABEL = 255
-_C.TRAIN.EPOCHS = 100
+_C.TRAIN.START_EPOCH = 1
+_C.TRAIN.MAX_EPOCH = 100
 
 # ---------------------------------------------------------------------------- #
 # Model options
@@ -55,12 +55,13 @@ _C.MODEL.BACKBONE_WEIGHT = "pretrained/"
 _C.MODEL.NORM_LAYER = 'bn'  # bn or syncbn
 _C.MODEL.OUTPUT_STRIDE = 8  # 8, 16, 32
 _C.MODEL.HEAD7X7 = False  # only for resnet backbone
-_C.MODEL.PHASE = 'train'
+_C.MODEL.PHASE = 'train'  # if test mode, RESUME and FINETUNE must be False
 _C.MODEL.RESUME = False
 _C.MODEL.FINETUNE = False
 _C.MODEL.NAME = 'psp'
 _C.MODEL.PRETRAINED = True
 _C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
+_C.MODEL.STATE_WEIGHT = "ckpts/ade20k/state.pth"
 # output.size * room_factor
 _C.MODEL.ZOOM_FACTOR = 8
 _C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone
@@ -149,7 +150,6 @@ _C.ContextNet.USE_AUX = False
 # SOLVER options
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
-_C.SOLVER.MAX_EPOCHS = 100
 _C.SOLVER.LOSS_NAME = ''
 _C.SOLVER.LOSS_WEIGHT = []
 _C.SOLVER.IGNORE_LABEL = 255
@@ -201,10 +201,13 @@ _C.GPU_IDS = u'0,1,2,3,4,5,6,7'
 # random seed
 _C.SEED = 1024
 
+# Directory for saving checkpoints and loggers
+_C.CKPT = '../ckpts/ade20k/ade20k_contextnet'
+
 
 def merge_cfg_from_file(file):
-    if os.path.isfile(root_path() + file) and file.endswith('.yaml'):
-        cfg.merge_from_file(root_path() + file)
+    if os.path.isfile(file) and file.endswith('.yaml'):
+        cfg.merge_from_file(file)
     else:
         raise Exception('{} is not a yaml file'.format(file))
 
@@ -215,5 +218,5 @@ def merge_cfg_from_list(cfg_list):
 
 # for shown
 def logger_cfg_from_file(file):
-    return cfg.load_cfg(open(root_path() + file))
+    return cfg.load_cfg(open(file))
 

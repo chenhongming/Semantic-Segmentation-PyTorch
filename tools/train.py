@@ -1,5 +1,6 @@
 import os
 import torch
+import shutil
 import argparse
 
 from torchvision import transforms
@@ -7,17 +8,18 @@ from torchvision import transforms
 import _init_path
 from config.config import cfg, merge_cfg_from_file, merge_cfg_from_list, logger_cfg_from_file
 from dataset import dataset, set_augmentations
-from models.model_zone import generate_model
+from models.model_zone import generate_model, load_resume_state
 from solver.loss import set_loss
 from solver.optimizer import set_optimizer
 from solver.scheduler import set_scheduler
 from utils.utils import setup_logger, setup_seed
+from utils.misc import check_mkdir
 
 
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='config/ade20k/ade20k_contextnet.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_contextnet.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
@@ -47,25 +49,46 @@ def main():
         transforms.Normalize(cfg.DATA.MEAN, cfg.DATA.STD),
     ])
     input_augmentation = set_augmentations(cfg)
+
     # Setup Dataloader
     train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON, transform=input_transform,
                                     augmentations=input_augmentation)
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=8, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
+
     # Setup Model
     model = generate_model()
     logger.info("Training model:\n\033[1;34m{} \033[0m".format(model))
     x = torch.rand((2, 3, 512, 512))
     o = model(x)
     print(o[0].size())
+
     # Setup Loss
     criterion = set_loss()
+
     # Setup Optimizer
     optimizer = set_optimizer(model)
+
     # Setup Scheduler
     scheduler = set_scheduler(optimizer)
 
+    # Setup Resume
+    if cfg.MODEL.RESUME:
+        ckpt_state = load_resume_state()
+        cfg.TRAIN.START_EPOCH = ckpt_state['epoch']
+        logger.info('resume train from epoch: {}'.format(cfg.TRAIN.START_EPOCH))
+        if ckpt_state['optimizer'] is not None and ckpt_state['lr_scheduler'] is not None:
+            optimizer.load_state_dict(ckpt_state['optimizer'])
+            scheduler.load_state_dict(ckpt_state['scheduler'])
+            logger.info('resume optimizer and lr scheduler from resume state...')
+
+    # Setup Output dir
+    if not os.path.isdir(cfg.CKPT):
+        check_mkdir(cfg.CKPT)
+    if args.cfg_file is not None:
+        shutil.copyfile(args.cfg_file, os.path.join(cfg.CKPT, args.cfg_file.split('/')[-1]))
+
     # main loop
-    for epoch in range(1, cfg.TRAIN.EPOCHS+1):
+    for epoch in range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH+1):
         train(model, train_loader, criterion, optimizer, scheduler, epoch)
 
 
