@@ -21,39 +21,6 @@ __all__ = ['PSPNet', 'psp']
 # -------------------------------------------------------------------------------------- #
 
 
-class PyramidPoolingModule(nn.Module):
-
-    def __init__(self, dim_in, ppm_hidden_dim, ppm_out_dim, norm_layer):
-        super().__init__()
-
-        self.ppm = []
-        for scale in cfg.PPM.POOL_SCALES:
-            self.ppm.append(nn.Sequential(
-                nn.AdaptiveAvgPool2d(scale),
-                nn.Conv2d(dim_in, ppm_hidden_dim, kernel_size=1, bias=False),
-                norm_layer(ppm_hidden_dim),
-                nn.ReLU(inplace=True)
-            ))
-        self.ppm = nn.ModuleList(self.ppm)
-        dim_in = dim_in + len(cfg.PPM.POOL_SCALES) * ppm_hidden_dim
-
-        self.conv_last = nn.Sequential(
-            nn.Conv2d(dim_in, ppm_out_dim, kernel_size=3, padding=1, bias=False),
-            norm_layer(ppm_out_dim),
-            nn.ReLU(inplace=True)
-        )
-        self.dim_out = ppm_out_dim
-
-    def forward(self, x):
-        x_size = x.size()
-        out = [x]
-        for f in self.ppm:
-            out.append(F.interpolate(f(x), x_size[2:], mode='bilinear', align_corners=True))
-        out = torch.cat(out, 1)
-        out = self.conv_last(out)
-        return out
-
-
 class PSPNet(nn.Module):
 
     def __init__(self):
@@ -99,6 +66,39 @@ class PSPNet(nn.Module):
             if self.zoom_factor != 1:
                 aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
             return out, aux_out
+        return out
+
+
+class PyramidPoolingModule(nn.Module):
+
+    def __init__(self, dim_in, ppm_hidden_dim, ppm_out_dim, norm_layer):
+        super().__init__()
+
+        self.ppm = []
+        for scale in cfg.PPM.POOL_SCALES:
+            self.ppm.append(nn.Sequential(
+                nn.AdaptiveAvgPool2d(scale),
+                nn.Conv2d(dim_in, ppm_hidden_dim, kernel_size=1, bias=False),
+                norm_layer(ppm_hidden_dim),
+                nn.ReLU(inplace=True)
+            ))
+        self.ppm = nn.ModuleList(self.ppm)
+        dim_in = dim_in + len(cfg.PPM.POOL_SCALES) * ppm_hidden_dim
+
+        self.conv_last = nn.Sequential(
+            nn.Conv2d(dim_in, ppm_out_dim, kernel_size=3, padding=1, bias=False),
+            norm_layer(ppm_out_dim),
+            nn.ReLU(inplace=True)
+        )
+        self.dim_out = ppm_out_dim
+
+    def forward(self, x):
+        x_size = x.size()
+        out = [x]
+        for f in self.ppm:
+            out.append(F.interpolate(f(x), x_size[2:], mode='bilinear', align_corners=True))
+        out = torch.cat(out, 1)
+        out = self.conv_last(out)
         return out
 
 

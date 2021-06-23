@@ -52,6 +52,16 @@ class BiSeNet(nn.Module):
             self.auxlayer2 = BiSeHead(self.context_path.backbone.dim_out[-1], self.classes, self.dropout,
                                       norm_layer=self.norm_layer)
 
+        # weight initialization
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+                if m.bias is not None:
+                    nn.init.zeros_(m.bias)
+            elif isinstance(m, (nn.BatchNorm2d, nn.SyncBatchNorm)):
+                nn.init.ones_(m.weight)
+                nn.init.zeros_(m.bias)
+
     def forward(self, x):
         spatial_out = self.spatial_path(x)
         context_out, context_auxout = self.context_path(x)

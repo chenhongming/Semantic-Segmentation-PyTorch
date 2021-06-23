@@ -23,6 +23,57 @@ __all__ = ['DenseASPP', 'denseaspp']
 # -------------------------------------------------------------------------------------- #
 
 
+class DenseASPP(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.classes = cfg.DATA.CLASSES
+        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
+        self.backbone_name = cfg.MODEL.BACKBONE_NAME
+        self.output_stride = cfg.DENSEASPP.OUTPUT_STRIDE
+        self.inter_channels = cfg.DENSEASPP.INTER_CHANNELS
+        self.out_channels = cfg.DENSEASPP.OUT_CHANNELS
+        self.atrous_rate = cfg.DENSEASPP.ATROUS_RATE
+        self.drop_rate = cfg.DENSEASPP.DROP_RATE
+        self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
+        assert self.zoom_factor in [1, 2, 4, 8]
+
+        if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
+            raise Exception("Not supported bankbone!")
+        self.backbone = set_backbone()
+        self.head = DenseASPPHead(self.backbone.dim_out[-1], self.inter_channels, self.out_channels,
+                                  self.atrous_rate, self.drop_rate, self.norm_layer)
+        if cfg.DENSEASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
+            self.aux = nn.Sequential(
+                nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, 3, padding=1, bias=False),
+                self.norm_layer(self.head.dim_out),
+                nn.ReLU(inplace=True))
+        self.output = nn.Sequential(
+            nn.Dropout(self.drop_rate),
+            nn.Conv2d(self.head.dim_out, self.classes, kernel_size=1, bias=False)
+        )
+
+    def forward(self, x):
+        size = x.size()[2:]
+        assert (size[0] - 1) % 8 == 0 and (size[1] - 1) % 8 == 0
+        h = int((size[0] - 1) / 8 * self.zoom_factor + 1)
+        w = int((size[1] - 1) / 8 * self.zoom_factor + 1)
+
+        _, _, c4, c5 = self.backbone(x)
+        c5 = self.head(c5)
+        out = self.output(c5)
+        if self.zoom_factor != 1:
+            out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
+        if cfg.DENSEASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
+            aux_out = self.aux(c4)
+            aux_out = self.output(aux_out)
+            if self.zoom_factor != 1:
+                aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
+            return out, aux_out
+        return out
+
+
 class DenseASPPConv(nn.Sequential):
 
     def __init__(self, in_channels, inter_channels, out_channels, atrous_rate, drop_rate=0.1, norm_layer=nn.BatchNorm2d):
@@ -76,57 +127,6 @@ class DenseASPPHead(nn.Module):
         x = torch.cat([aspp_24, x], dim=1)
 
         return x
-
-
-class DenseASPP(nn.Module):
-
-    def __init__(self):
-        super().__init__()
-
-        self.classes = cfg.DATA.CLASSES
-        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
-        self.backbone_name = cfg.MODEL.BACKBONE_NAME
-        self.output_stride = cfg.DENSEASPP.OUTPUT_STRIDE
-        self.inter_channels = cfg.DENSEASPP.INTER_CHANNELS
-        self.out_channels = cfg.DENSEASPP.OUT_CHANNELS
-        self.atrous_rate = cfg.DENSEASPP.ATROUS_RATE
-        self.drop_rate = cfg.DENSEASPP.DROP_RATE
-        self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
-        assert self.zoom_factor in [1, 2, 4, 8]
-
-        if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
-            raise Exception("Not supported bankbone!")
-        self.backbone = set_backbone()
-        self.head = DenseASPPHead(self.backbone.dim_out[-1], self.inter_channels, self.out_channels,
-                                  self.atrous_rate, self.drop_rate, self.norm_layer)
-        if cfg.DENSEASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
-            self.aux = nn.Sequential(
-                nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, 3, padding=1, bias=False),
-                self.norm_layer(self.head.dim_out),
-                nn.ReLU(inplace=True))
-        self.output = nn.Sequential(
-            nn.Dropout(self.drop_rate),
-            nn.Conv2d(self.head.dim_out, self.classes, kernel_size=1, bias=False)
-        )
-
-    def forward(self, x):
-        size = x.size()[2:]
-        assert (size[0] - 1) % 8 == 0 and (size[1] - 1) % 8 == 0
-        h = int((size[0] - 1) / 8 * self.zoom_factor + 1)
-        w = int((size[1] - 1) / 8 * self.zoom_factor + 1)
-
-        _, _, c4, c5 = self.backbone(x)
-        c5 = self.head(c5)
-        out = self.output(c5)
-        if self.zoom_factor != 1:
-            out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
-        if cfg.DENSEASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
-            aux_out = self.aux(c4)
-            aux_out = self.output(aux_out)
-            if self.zoom_factor != 1:
-                aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
-            return out, aux_out
-        return out
 
 
 @MODEL_REGISTRY.register()

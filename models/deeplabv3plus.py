@@ -16,36 +16,6 @@ __all__ = ['DeepLabV3plus', 'deeplabv3plus']
 # -------------------------------------------------------------------------------------- #
 
 
-class DeepLabV3plusHead(nn.Module):
-
-    def __init__(self, c2_channels, c5_channels, low_level_feature_channels, norm_layer):
-        super().__init__()
-
-        self.aspp = ASPP(in_channels=c5_channels)
-        self.c2_block = nn.Sequential(
-            nn.Conv2d(c2_channels, low_level_feature_channels, kernel_size=1, bias=False),
-            norm_layer(low_level_feature_channels),
-            nn.ReLU(True),
-        )
-        self.block = nn.Sequential(
-            nn.Conv2d(self.aspp.dim_out + low_level_feature_channels, 256, kernel_size=3, bias=False),
-            norm_layer(256),
-            nn.ReLU(True),
-            nn.Conv2d(256, 256, kernel_size=3, bias=False),
-            norm_layer(256),
-            nn.ReLU(True),
-        )
-        self.dim_out = 256  # default
-
-    def forward(self, x):
-        [c2, c5] = x
-        size = c2.size()[2:]
-        c5 = self.aspp(c5)
-        c2 = self.c2_block(c2)
-        x = F.interpolate(c5, size, mode='bilinear', align_corners=True)
-        return self.block(torch.cat([x, c2], dim=1))
-
-
 class DeepLabV3plus(nn.Module):
 
     def __init__(self):
@@ -94,6 +64,36 @@ class DeepLabV3plus(nn.Module):
                 aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
             return out, aux_out
         return out
+
+
+class DeepLabV3plusHead(nn.Module):
+
+    def __init__(self, c2_channels, c5_channels, low_level_feature_channels, norm_layer):
+        super().__init__()
+
+        self.aspp = ASPP(in_channels=c5_channels)
+        self.c2_block = nn.Sequential(
+            nn.Conv2d(c2_channels, low_level_feature_channels, kernel_size=1, bias=False),
+            norm_layer(low_level_feature_channels),
+            nn.ReLU(True),
+        )
+        self.block = nn.Sequential(
+            nn.Conv2d(self.aspp.dim_out + low_level_feature_channels, 256, kernel_size=3, bias=False),
+            norm_layer(256),
+            nn.ReLU(True),
+            nn.Conv2d(256, 256, kernel_size=3, bias=False),
+            norm_layer(256),
+            nn.ReLU(True),
+        )
+        self.dim_out = 256  # default
+
+    def forward(self, x):
+        [c2, c5] = x
+        size = c2.size()[2:]
+        c5 = self.aspp(c5)
+        c2 = self.c2_block(c2)
+        x = F.interpolate(c5, size, mode='bilinear', align_corners=True)
+        return self.block(torch.cat([x, c2], dim=1))
 
 
 @MODEL_REGISTRY.register()

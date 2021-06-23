@@ -14,43 +14,12 @@ __all__ = ['LRASPP', 'lraspp']
 # -------------------------------------------------------------------------------------- #
 
 
-class LRASPPHead(nn.Module):
+class LRASPP(nn.Module):
     """
     Implement a Lite R-ASPP Network for semantic segmentation from
     "Searching for MobileNetV3"
     <https://arxiv.org/abs/1905.02244>
-
-    Args:
-        c2_channels (int): the number of channels of the c2(low) level features of backbone.
-        c5_channels (int): the number of channels of the c5(high) level features of backbone.
-        inter_channels (int): the number of channels for intermediate computations.
     """
-
-    def __init__(self, c2_channels, c5_channels, inter_channels, classes, norm_layer):
-        super().__init__()
-
-        self.cbr = nn.Sequential(
-            nn.Conv2d(c5_channels, inter_channels, kernel_size=3, bias=False),
-            norm_layer(inter_channels),
-            nn.ReLU(inplace=True))
-        self.scale = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(c5_channels, inter_channels, kernel_size=1, bias=False),
-            nn.Sigmoid())
-        self.c2_classifier = nn.Conv2d(c2_channels, classes, kernel_size=1, bias=False)
-        self.c5_classifier = nn.Conv2d(inter_channels, classes, kernel_size=1, bias=False)
-
-    def forward(self, x):
-        c2, c5 = x
-        x = self.cbr(c5)
-        s = self.scale(c5)
-        x = x * s
-        x = F.interpolate(x, c2.size()[2:], mode='bilinear', align_corners=True)
-        return self.c2_classifier(c2) + self.c5_classifier(x)
-
-
-class LRASPP(nn.Module):
-
     def __init__(self):
         super().__init__()
 
@@ -79,6 +48,37 @@ class LRASPP(nn.Module):
         if self.zoom_factor != 1:
             out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
         return out
+
+
+class LRASPPHead(nn.Module):
+    """
+    Args:
+        c2_channels (int): the number of channels of the c2(low) level features of backbone.
+        c5_channels (int): the number of channels of the c5(high) level features of backbone.
+        inter_channels (int): the number of channels for intermediate computations.
+    """
+
+    def __init__(self, c2_channels, c5_channels, inter_channels, classes, norm_layer):
+        super().__init__()
+
+        self.cbr = nn.Sequential(
+            nn.Conv2d(c5_channels, inter_channels, kernel_size=3, bias=False),
+            norm_layer(inter_channels),
+            nn.ReLU(inplace=True))
+        self.scale = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(c5_channels, inter_channels, kernel_size=1, bias=False),
+            nn.Sigmoid())
+        self.c2_classifier = nn.Conv2d(c2_channels, classes, kernel_size=1, bias=False)
+        self.c5_classifier = nn.Conv2d(inter_channels, classes, kernel_size=1, bias=False)
+
+    def forward(self, x):
+        c2, c5 = x
+        x = self.cbr(c5)
+        s = self.scale(c5)
+        x = x * s
+        x = F.interpolate(x, c2.size()[2:], mode='bilinear', align_corners=True)
+        return self.c2_classifier(c2) + self.c5_classifier(x)
 
 
 @MODEL_REGISTRY.register()

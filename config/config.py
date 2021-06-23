@@ -133,6 +133,19 @@ _C.BISENET.DROP_RATE = 0.1
 _C.BISENET.USE_AUX = True
 
 # ---------------------------------------------------------------------------- #
+# contextnet options
+# ---------------------------------------------------------------------------- #
+_C.ContextNet = CN()
+_C.ContextNet.IN_CHANNELS = 3
+_C.ContextNet.CHANNELS = [32, 32, 48, 64, 96, 128]
+_C.ContextNet.EXPANSION_FACTOR = [1, 6, 6, 6, 6, 6]
+_C.ContextNet.LAYERS = [1, 1, 3, 3, 2, 2]
+_C.ContextNet.HIDDEN_CHANNELS1 = 32
+_C.ContextNet.HIDDEN_CHANNELS2 = 64
+_C.ContextNet.OUT_CHANNELS = 128
+_C.ContextNet.USE_AUX = False
+
+# ---------------------------------------------------------------------------- #
 # SOLVER options
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()

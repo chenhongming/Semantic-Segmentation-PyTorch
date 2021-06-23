@@ -27,20 +27,6 @@ model_map = {
 }
 
 
-class FCNHead(nn.Sequential):
-
-    def __init__(self, in_channels, channels):
-        inter_channels = in_channels // 4
-        layers = [
-            nn.Conv2d(in_channels, inter_channels, kernel_size=3, padding=1, bias=False),
-            set_norm(cfg.MODEL.NORM_LAYER)(inter_channels),
-            nn.ReLU(True),
-            nn.Dropout(cfg.FCN.DROP_OUT),
-            nn.Conv2d(inter_channels, channels, kernel_size=1)
-        ]
-        super().__init__(*layers)
-
-
 class FCN32s(nn.Module):
 
     def __init__(self):
@@ -117,6 +103,20 @@ class FCN8s(nn.Module):
         c4_up = F.interpolate(c4+c5_up, c4.size()[2:], mode='bilinear', align_corners=True)
         out = F.interpolate(c3+c4_up, size, mode='bilinear', align_corners=True)
         return out
+
+
+class FCNHead(nn.Sequential):
+
+    def __init__(self, in_channels, channels):
+        inter_channels = in_channels // 4
+        layers = [
+            nn.Conv2d(in_channels, inter_channels, kernel_size=3, padding=1, bias=False),
+            set_norm(cfg.MODEL.NORM_LAYER)(inter_channels),
+            nn.ReLU(True),
+            nn.Dropout(cfg.FCN.DROP_OUT),
+            nn.Conv2d(inter_channels, channels, kernel_size=1)
+        ]
+        super().__init__(*layers)
 
 
 @MODEL_REGISTRY.register()

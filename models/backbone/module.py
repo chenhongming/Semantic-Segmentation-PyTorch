@@ -30,8 +30,8 @@ class DWConvBNReLU(nn.Module):
         super().__init__()
         self.conv = nn.Sequential(
             ConvBNReLU(in_channels, in_channels, kernel_size=3, stride=stride, padding=padding, dilation=dilation,
-                       groups=in_channels, relu6=relu6, norm_layers=norm_layer),
-            ConvBNReLU(in_channels, out_channels, kernel_size=1, relu6=relu6, norm_layers=norm_layer)
+                       groups=in_channels, relu6=relu6, norm_layer=norm_layer),
+            ConvBNReLU(in_channels, out_channels, kernel_size=1, relu6=relu6, norm_layer=norm_layer)
         )
 
     def forward(self, x):

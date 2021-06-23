@@ -4,7 +4,7 @@ from torch.optim import lr_scheduler
 from config.config import cfg
 
 
-# The lr_scheduler is updated every epoch by calling scheduler.step()
+# The lr_scheduler updated every epoch by calling scheduler.step()
 # for epoch in cfg.SOLVER.MAX_EPOCHS:
 #   train()
 #   scheduler.step()
@@ -24,7 +24,7 @@ def set_scheduler(optimizer):
     return scheduler
 
 
-# The lr_scheduler is updated every batch size
+# The lr_scheduler updated every batch size
 def set_scheduler1(optimizer):
     scheduler = Scheduler(optimizer)
     return scheduler

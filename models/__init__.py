@@ -5,4 +5,5 @@ from .lraspp import *
 from .denseaspp import *
 from .pspnet import *
 from .bisenet import *
+from .contextnet import *
 
