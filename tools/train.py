@@ -1,8 +1,11 @@
 import os
+import time
 import torch
 import shutil
+import random
 import argparse
 
+from tqdm import tqdm
 from torchvision import transforms
 
 import _init_path
@@ -13,7 +16,7 @@ from solver.loss import set_loss
 from solver.optimizer import set_optimizer
 from solver.scheduler import set_scheduler
 from utils.utils import setup_logger, setup_seed
-from utils.misc import check_mkdir
+from utils.misc import check_mkdir, params_flops
 
 
 def main():
@@ -53,14 +56,17 @@ def main():
     # Setup Dataloader
     train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON, transform=input_transform,
                                     augmentations=input_augmentation)
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=8, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=1, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
 
     # Setup Model
     model = generate_model()
     logger.info("Training model:\n\033[1;34m{} \033[0m".format(model))
-    x = torch.rand((2, 3, 512, 512))
-    o = model(x)
-    print(o[0].size())
+    # x = torch.rand((2, 3, 512, 512))
+    # o = model(x)
+    # print(o[0].size())
+
+    # Setup Params and Flops
+    params_flops(model, cfg.TRAIN.CROP_SIZE, device)
 
     # Setup Loss
     criterion = set_loss()
@@ -93,7 +99,12 @@ def main():
 
 
 def train(model, loader, criterion, optimizer, scheduler, epoch):
-    pass
+    desc = f'Epoch {epoch}/{cfg.TRAIN.MAX_EPOCH}'
+    with tqdm(total=len(loader), desc=desc, ascii=True) as pbar:
+        for index, (image, mask) in enumerate(loader):
+            time.sleep(0.05)
+            pbar.set_postfix(**{'loss': random.random(), 'lr': random.random()})
+            pbar.update(1)
 
 
 if __name__ == '__main__':

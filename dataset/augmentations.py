@@ -76,8 +76,8 @@ class RandomRotate:
         assert img.size == mask.size
         assert len(self.rotate) == 2 and len(self.padding) == 3
         rotate_degree = random.randint(self.rotate[0], self.rotate[1])
-        img = F.affine(img, angle=rotate_degree, resample=Image.BILINEAR, fillcolor=self.padding,
+        img = F.affine(img, angle=rotate_degree, interpolation=F.InterpolationMode.BILINEAR, fill=self.padding,
                        translate=(0, 0), scale=1.0, shear=0.0)
-        mask = F.affine(mask, angle=rotate_degree, resample=Image.NEAREST, fillcolor=self.ignore_label,
+        mask = F.affine(mask, angle=rotate_degree, interpolation=F.InterpolationMode.NEAREST, fill=self.ignore_label,
                         translate=(0, 0), scale=1.0, shear=0.0)
         return img, mask
