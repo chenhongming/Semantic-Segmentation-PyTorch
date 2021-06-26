@@ -54,9 +54,16 @@ def main():
     input_augmentation = set_augmentations(cfg)
 
     # Setup Dataloader
-    train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON, transform=input_transform,
+    train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON,
+                                    split=cfg.MODEL.PHASE,
+                                    batch_size=cfg.TRAIN.BATCH_SIZE,
+                                    crop_size=cfg.TRAIN.CROP_SIZE,
+                                    padding=cfg.TRAIN.PADDING,
+                                    ignore_label=cfg.TRAIN.IGNORE_LABEL,
+                                    transform=input_transform,
                                     augmentations=input_augmentation)
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=1, shuffle=None, pin_memory=True, sampler=None, drop_last=True)
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=None,
+                                               pin_memory=True, sampler=None, drop_last=True)
 
     # Setup Model
     model = generate_model()
@@ -100,7 +107,7 @@ def main():
 
 def train(model, loader, criterion, optimizer, scheduler, epoch):
     desc = f'Epoch {epoch}/{cfg.TRAIN.MAX_EPOCH}'
-    with tqdm(total=len(loader), desc=desc, ascii=True) as pbar:
+    with tqdm(total=len(loader), desc=desc) as pbar:
         for index, (image, mask) in enumerate(loader):
             time.sleep(0.05)
             pbar.set_postfix(**{'loss': random.random(), 'lr': random.random()})

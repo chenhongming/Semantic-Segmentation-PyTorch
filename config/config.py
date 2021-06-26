@@ -30,6 +30,7 @@ _C.DATA.STD = [0.229, 0.224, 0.225]
 # ---------------------------------------------------------------------------- #
 _C.TRAIN = CN()
 _C.TRAIN.AUGMENTATIONS = ['RandomFlip', 'RandomResize', 'RandomCrop', 'RandomRotate']
+_C.TRAIN.BATCH_SIZE = 8
 # Probability of using RandomFlip
 _C.TRAIN.PROB = 0.5
 # Ratio of using RandomResize

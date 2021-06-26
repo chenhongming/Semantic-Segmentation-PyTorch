@@ -2,7 +2,8 @@ DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
   VAL_JSON: ADEChallengeData2016/val.json
   CLASSES: 21
-
+TRAIN:
+  BATCH_SIZE: 128
 MODEL:
   NAME: 'contextnet' # no backbone
   BACKBONE_NAME: None

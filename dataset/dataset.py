@@ -4,14 +4,20 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
+from data.utils.utils import unified_size
 from utils.utils import root_path
 
 
 class JsonDataset(Dataset):
-    def __init__(self, root="data/", json_path="", split='train', transform=None, augmentations=None):
+    def __init__(self, root="data/", json_path="", split='train', batch_size=1, crop_size=(640, 512), padding=(0, 0, 0),
+                 ignore_label=255, transform=None, augmentations=None):
         self.root = root_path() + root
         self.json_path = json_path
         self.split = split
+        self.batch_size = batch_size
+        self.crop_size = crop_size
+        self.padding = padding
+        self.ignore_label = ignore_label
         self.transform = transform
         self.augmentations = augmentations
         with open(self.root + self.json_path, 'r') as f:
@@ -22,6 +28,8 @@ class JsonDataset(Dataset):
         mask = Image.open(self.root + self.json_file[index].split(' ')[1])
         if self.augmentations is not None:
             image, mask = self.augmentations(image, mask)
+        if self.split == 'train' and self.batch_size > 1:
+            image, mask = unified_size(image, mask, self.crop_size, self.padding, self.ignore_label)
         if self.transform is not None:
             image = self.transform(image)
         # convert image & mask to tensor
