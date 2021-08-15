@@ -1,7 +1,7 @@
 DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
   VAL_JSON: ADEChallengeData2016/val.json
-  CLASSES: 21
+  CLASSES: 151
 
 MODEL:
   NAME: 'denseaspp'
@@ -19,12 +19,10 @@ MODEL:
 
 
 DENSEASPP:
-  OUTPUT_STRIDE: 8
   INTER_CHANNELS: 256
   OUT_CHANNELS: 64
   ATROUS_RATE: [3, 6, 12, 18, 24]
   DROP_RATE: 0.1
-  USE_AUX: True
 
 GPU_USE: True
 GPU_IDS: u'0,1'

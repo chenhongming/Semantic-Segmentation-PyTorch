@@ -26,10 +26,13 @@ class ContextNet(nn.Module):
         self.hidden_channels1 = cfg.ContextNet.HIDDEN_CHANNELS1
         self.hidden_channels2 = cfg.ContextNet.HIDDEN_CHANNELS2
         self.out_channels = cfg.ContextNet.OUT_CHANNELS
-        self.aux = cfg.ContextNet.USE_AUX
+        self.aux = cfg.MODEL.USE_AUX
+        self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         if cfg.MODEL.BACKBONE_NAME is not None:
             raise Exception("contextnet is not needed backbone")
+        if self.output_stride != 8:
+            raise Exception("contextnet only supported output_stride == 8")
 
         self.shadow_net = ShallowNet(self.in_channels, self.hidden_channels1, self.hidden_channels2,
                                      self.out_channels, self.norm_layer)
@@ -61,6 +64,7 @@ class ContextNet(nn.Module):
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
         size = (x.size()[2] // 4, x.size()[3] // 4)
         s = self.shadow_net(x)
 
@@ -69,7 +73,7 @@ class ContextNet(nn.Module):
         out = self.output(out)
         if self.aux:
             auxout = self.auxlayer(x)
-            auxout = F.interpolate(auxout, size=size, mode='bilinear', align_corners=True)
+            auxout = F.interpolate(auxout, size=out_size, mode='bilinear', align_corners=True)
             return out, auxout
         return out
 

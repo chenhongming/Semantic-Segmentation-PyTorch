@@ -1,7 +1,7 @@
 DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
   VAL_JSON: ADEChallengeData2016/val.json
-  CLASSES: 21
+  CLASSES: 151
 
 MODEL:
   NAME: 'lraspp'
@@ -14,10 +14,9 @@ MODEL:
   FINETUNE: False
   PRETRAINED: True
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"
-
+  OUTPUT_STRIDE: 32
 
 LRASPP:
-  OUTPUT_STRIDE: 16
   INTER_CHANNELS: 128
 
 GPU_USE: True

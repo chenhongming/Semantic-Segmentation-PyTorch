@@ -22,7 +22,7 @@ from utils.misc import check_mkdir, params_flops
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_contextnet.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_deeplabv3.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
@@ -76,7 +76,7 @@ def main():
     params_flops(model, cfg.TRAIN.CROP_SIZE, device)
 
     # Setup Loss
-    criterion = set_loss()
+    criterion = set_loss().to(device)
 
     # Setup Optimizer
     optimizer = set_optimizer(model)
@@ -102,15 +102,33 @@ def main():
 
     # main loop
     for epoch in range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH+1):
-        train(model, train_loader, criterion, optimizer, scheduler, epoch)
+        logger.info("\n\t\t\t>>>>> Start training >>>>>")
+        train(model, train_loader, criterion, optimizer, scheduler, epoch, device)
 
 
-def train(model, loader, criterion, optimizer, scheduler, epoch):
+def train(model, loader, criterion, optimizer, scheduler, epoch, device):
+    # switch to train model
+    model.train()
+
     desc = f'Epoch {epoch}/{cfg.TRAIN.MAX_EPOCH}'
     with tqdm(total=len(loader), desc=desc) as pbar:
-        for index, (image, mask) in enumerate(loader):
+        for index, (images, masks) in enumerate(loader):
             time.sleep(0.05)
-            pbar.set_postfix(**{'loss': random.random(), 'lr': random.random()})
+
+            # load data to device
+            images = images.to(device)
+            masks = masks.to(device)
+            # forward
+            outputs = model(images)
+            loss = criterion(outputs, masks)
+            loss = loss.mean()
+            # backward
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            scheduler.step()
+
+            pbar.set_postfix(**{'loss': loss.item(), 'lr': random.random()})
             pbar.update(1)
 
 

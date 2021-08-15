@@ -28,7 +28,7 @@ class DeepLabV3(nn.Module):
 
         self.classes = cfg.DATA.CLASSES
         self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
-        self.output_stride = cfg.ASPP.OUTPUT_STRIDE
+        self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.out_channels = cfg.ASPP.OUT_CHANNELS  # default 512
         self.dropout = cfg.ASPP.DROPOUT
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
@@ -38,7 +38,7 @@ class DeepLabV3(nn.Module):
             raise Exception("Not supported bankbone!")
         self.backbone = set_backbone()
         self.head = ASPP(self.backbone.dim_out[-1], self.out_channels, self.output_stride, self.norm_layer)
-        if cfg.ASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
+        if cfg.MODEL.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
             self.aux = nn.Sequential(
                 nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, kernel_size=3, padding=1, bias=False),
                 self.norm_layer(self.head.dim_out),
@@ -49,21 +49,15 @@ class DeepLabV3(nn.Module):
         )
 
     def forward(self, x):
-        size = x.size()[2:]
-        assert (size[0] - 1) % 8 == 0 and (size[1] - 1) % 8 == 0
-        h = int((size[0] - 1) / 8 * self.zoom_factor + 1)
-        w = int((size[1] - 1) / 8 * self.zoom_factor + 1)
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
 
         _, _, c4, c5 = self.backbone(x)
         c5 = self.head(c5)
         out = self.output(c5)
-        if self.zoom_factor != 1:
-            out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
-        if cfg.ASPP.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
+        if cfg.MODEL.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
             aux_out = self.aux(c4)
             aux_out = self.output(aux_out)
-            if self.zoom_factor != 1:
-                aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
+            aux_out = F.interpolate(aux_out, size=out_size, mode='bilinear', align_corners=True)
             return out, aux_out
         return out
 

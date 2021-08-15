@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
+from config.config import cfg
 from data.utils.utils import unified_size
 from utils.utils import root_path
 
@@ -32,6 +33,9 @@ class JsonDataset(Dataset):
             image, mask = unified_size(image, mask, self.crop_size, self.padding, self.ignore_label)
         if self.transform is not None:
             image = self.transform(image)
+        # down sample mask(e.g. 8x)
+        w, h = mask.size
+        mask = mask.resize((w // cfg.MODEL.OUTPUT_STRIDE, h // cfg.MODEL.OUTPUT_STRIDE), Image.NEAREST)
         # convert image & mask to tensor
         image = torch.FloatTensor(image)
         mask = torch.LongTensor(np.array(mask).astype('int32'))

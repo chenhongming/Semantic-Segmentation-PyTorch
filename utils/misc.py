@@ -21,5 +21,5 @@ def params_flops(net, size, device):
     img = torch.randn(1, 3, _size[0], _size[1]).to(device)
     flops, params = profile(net, inputs=(img, ), verbose=False)
     flops, params = clever_format([flops, params], "%.3f")
-    logger.info("Model: {} | Flops: {} | Params: {}".format(net.__class__.__name__, flops, params))
+    logger.info("Model: {} | Flops: {} | Params: {}".format(net.__class__.__name__, flops, params) + '\n')
 

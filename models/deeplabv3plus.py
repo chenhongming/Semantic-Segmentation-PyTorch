@@ -25,9 +25,10 @@ class DeepLabV3plus(nn.Module):
         self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
         self.backbone_name = cfg.MODEL.BACKBONE_NAME
         self.dropout = cfg.DEEPLABV3PLUS.DROPOUT
-        self.output_stride = cfg.DEEPLABV3PLUS.OUTPUT_STRIDE
+        self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.low_level_feature_channels = cfg.DEEPLABV3PLUS.LOW_LEVEL_FEATURE_CHANNELS
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
+        self.out_channels = cfg.ASPP.OUT_CHANNELS  # default 512
         assert self.zoom_factor in [1, 2, 4, 8]
 
         if self.output_stride != 16:
@@ -35,9 +36,9 @@ class DeepLabV3plus(nn.Module):
         if not self.backbone_name.startswith('resnet') or self.backbone_name.startswith('mobilenet_v1'):
             raise Exception("Unsupported backbone")
         self.backbone = set_backbone()
-        self.head = DeepLabV3plusHead(self.backbone.dim_out[0], self.backbone.dim_out[-1],
-                                      self.low_level_feature_channels, self.norm_layer)
-        if cfg.DEEPLABV3PLUS.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
+        self.head = DeepLabV3plusHead(self.backbone.dim_out[0], self.backbone.dim_out[-1], self.out_channels,
+                                      self.output_stride, self.low_level_feature_channels, self.norm_layer)
+        if cfg.MODEL.USE_AUX and cfg.MODEL.PHASE == 'train' and self.backbone.dim_out[-2] is not None:
             self.aux = nn.Sequential(
                 nn.Conv2d(self.backbone.dim_out[-2], self.head.dim_out, 3, padding=1, bias=False),
                 self.norm_layer(self.head.dim_out),
@@ -48,40 +49,37 @@ class DeepLabV3plus(nn.Module):
         )
 
     def forward(self, x):
-        size = x.size()[2:]
-        assert (size[0] - 1) % 8 == 0 and (size[1] - 1) % 8 == 0
-        h = int((size[0] - 1) / 8 * self.zoom_factor + 1)
-        w = int((size[1] - 1) / 8 * self.zoom_factor + 1)
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
 
         c2, _, c4, c5 = self.backbone(x)
         out = self.head([c2, c5])
-        if self.zoom_factor != 1:
-            out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
-        if cfg.DEEPLABV3PLUS.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
+        out = self.output(out)
+        out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
+        if cfg.MODEL.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
             aux_out = self.aux(c4)
             aux_out = self.output(aux_out)
-            if self.zoom_factor != 1:
-                aux_out = F.interpolate(aux_out, size=(h, w), mode='bilinear', align_corners=True)
+            aux_out = F.interpolate(aux_out, size=out_size, mode='bilinear', align_corners=True)
             return out, aux_out
         return out
 
 
 class DeepLabV3plusHead(nn.Module):
 
-    def __init__(self, c2_channels, c5_channels, low_level_feature_channels, norm_layer):
+    def __init__(self, c2_channels, c5_channels, c5_out_channels, output_stride, low_level_feature_channels, norm_layer):
         super().__init__()
 
-        self.aspp = ASPP(in_channels=c5_channels)
+        self.aspp = ASPP(in_channels=c5_channels, out_channels=c5_out_channels,
+                         output_stride=output_stride, norm_layer=norm_layer)
         self.c2_block = nn.Sequential(
             nn.Conv2d(c2_channels, low_level_feature_channels, kernel_size=1, bias=False),
             norm_layer(low_level_feature_channels),
             nn.ReLU(True),
         )
         self.block = nn.Sequential(
-            nn.Conv2d(self.aspp.dim_out + low_level_feature_channels, 256, kernel_size=3, bias=False),
+            nn.Conv2d(self.aspp.dim_out + low_level_feature_channels, 256, kernel_size=3, padding=1, bias=False),
             norm_layer(256),
             nn.ReLU(True),
-            nn.Conv2d(256, 256, kernel_size=3, bias=False),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1, bias=False),
             norm_layer(256),
             nn.ReLU(True),
         )

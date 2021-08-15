@@ -1,9 +1,10 @@
 DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
   VAL_JSON: ADEChallengeData2016/val.json
-  CLASSES: 21
+  CLASSES: 151
 TRAIN:
-  BATCH_SIZE: 128
+  BATCH_SIZE: 16
+  MAX_EPOCH: 50
 MODEL:
   NAME: 'contextnet' # no backbone
   BACKBONE_NAME: None
@@ -13,10 +14,7 @@ MODEL:
   FINETUNE: False
   PRETRAINED: True
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"
-  OUTPUT_STRIDE: 32
-
-ContextNet:
-  USE_AUX: True
+  OUTPUT_STRIDE: 8
 
 GPU_USE: True
 GPU_IDS: u'0,1'

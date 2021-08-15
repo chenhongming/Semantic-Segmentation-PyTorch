@@ -1,7 +1,7 @@
 DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
   VAL_JSON: ADEChallengeData2016/val.json
-  CLASSES: 21
+  CLASSES: 151
 
 MODEL:
   NAME: 'deeplabv3plus'
@@ -14,12 +14,10 @@ MODEL:
   FINETUNE: False
   PRETRAINED: True
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"
-
+  OUTPUT_STRIDE: 16 # only 16 for deeplabv3plus
 
 DEEPLABV3PLUS:
-  OUTPUT_STRIDE: 16
   DROPOUT: 0.1
-  USE_AUX: True
 
 GPU_USE: True
 GPU_IDS: u'0,1'

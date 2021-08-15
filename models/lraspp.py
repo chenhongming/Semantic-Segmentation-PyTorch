@@ -26,7 +26,7 @@ class LRASPP(nn.Module):
         self.classes = cfg.DATA.CLASSES
         self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
         self.backbone_name = cfg.MODEL.BACKBONE_NAME
-        self.output_stride = cfg.LRASPP.OUTPUT_STRIDE
+        self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.inter_channels = cfg.LRASPP.INTER_CHANNELS
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         assert self.zoom_factor in [1, 2, 4, 8]
@@ -38,15 +38,11 @@ class LRASPP(nn.Module):
                                self.inter_channels, self.classes, self.norm_layer)
 
     def forward(self, x):
-        size = x.size()[2:]
-        assert (size[0] - 1) % 8 == 0 and (size[1] - 1) % 8 == 0
-        h = int((size[0] - 1) / 8 * self.zoom_factor + 1)
-        w = int((size[1] - 1) / 8 * self.zoom_factor + 1)
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
 
         c2, _, _, c5 = self.backbone(x)
         out = self.head([c2, c5])
-        if self.zoom_factor != 1:
-            out = F.interpolate(out, size=(h, w), mode='bilinear', align_corners=True)
+        out = F.interpolate(out, out_size, mode='bilinear', align_corners=True)
         return out
 
 

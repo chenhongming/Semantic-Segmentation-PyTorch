@@ -55,7 +55,7 @@ class _Transition(nn.Sequential):
         super().__init__()
         self.add_module('norm', norm_layer(num_input_features))
         self.add_module('relu', nn.ReLU(True))
-        self.add_module('conv', nn.Conv2d(num_input_features, num_output_features, kernel_size=1, padding=1, bias=False))
+        self.add_module('conv', nn.Conv2d(num_input_features, num_output_features, kernel_size=1, bias=False))
         if stride == 2:
             self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
 

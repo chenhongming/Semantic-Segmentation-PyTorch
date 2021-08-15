@@ -39,7 +39,7 @@ _C.TRAIN.RATIO = (0.5, 2)
 # int: a square crop (crop_size, crop_size) is made
 # list: [640, 512]
 _C.TRAIN.CROP_SIZE = 512
-# prams of using RandomRotate: PADDING for img, IGNORE_LABEL for mask
+# params of using RandomRotate: PADDING for img, IGNORE_LABEL for mask
 _C.TRAIN.ROTATE = (-10, 10)
 _C.TRAIN.PADDING = (0, 0, 0)
 _C.TRAIN.IGNORE_LABEL = 255
@@ -67,6 +67,9 @@ _C.MODEL.STATE_WEIGHT = "ckpts/ade20k/state.pth"
 _C.MODEL.ZOOM_FACTOR = 8
 _C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone
 _C.MODEL.DROP_RATE = 0.1  # for densenet
+_C.MODEL.USE_AUX = True  # c3 must be not None if USE_AUX is True. See segmentation model define
+_C.MODEL.AUX_LOSS_WEIGHT = 0.4
+_C.MODEL.AUX2_LOSS_WEIGHT = 0.4  # for bisenet
 
 # ---------------------------------------------------------------------------- #
 # PSP(PPM) options
@@ -77,8 +80,6 @@ _C.PPM.POOL_SCALES = (1, 2, 3, 6)
 _C.PPM.PPM_HIDDEN_DIM = 512
 _C.PPM.PPM_OUT_DIM = 512
 _C.PPM.DROP_OUT = 0.1
-_C.PPM.USE_AUX = True  # c3 must be not None if USE_AUX is True
-_C.PPM.AUX_LOSS_WEIGHT = 0.4
 
 # ---------------------------------------------------------------------------- #
 # FCN options
@@ -95,22 +96,19 @@ _C.ASPP = CN()
 _C.ASPP.OUTPUT_STRIDE = 8  # 8 or 16
 _C.ASPP.OUT_CHANNELS = 512
 _C.ASPP.DROPOUT = 0.5
-_C.ASPP.USE_AUX = True  # c3 must be not None if USE_AUX is True
 
 # ---------------------------------------------------------------------------- #
 # deeplabv3plus options
 # ---------------------------------------------------------------------------- #
 _C.DEEPLABV3PLUS = CN()
 _C.DEEPLABV3PLUS.LOW_LEVEL_FEATURE_CHANNELS = 48  # 48 or 32
-_C.DEEPLABV3PLUS.OUTPUT_STRIDE = 16  # only 16 for deeplabv3plus
-_C.DEEPLABV3PLUS.USE_AUX = True
+_C.DEEPLABV3PLUS.OUTPUT_STRIDE = 16  # only 16 for deeplabv3plus (unused)
 _C.DEEPLABV3PLUS.DROPOUT = 0.1
 
 # ---------------------------------------------------------------------------- #
 # lraspp options
 # ---------------------------------------------------------------------------- #
 _C.LRASPP = CN()
-_C.LRASPP.OUTPUT_STRIDE = 8
 _C.LRASPP.INTER_CHANNELS = 128  # default
 
 # ---------------------------------------------------------------------------- #
@@ -122,7 +120,6 @@ _C.DENSEASPP.INTER_CHANNELS = 256  # default
 _C.DENSEASPP.OUT_CHANNELS = 64  # default
 _C.DENSEASPP.ATROUS_RATE = [3, 6, 12, 18, 24]  # default
 _C.DENSEASPP.DROP_RATE = 0.1
-_C.DENSEASPP.USE_AUX = True
 
 # ---------------------------------------------------------------------------- #
 # bisenet options
@@ -132,7 +129,6 @@ _C.BISENET.IN_CHANNELS = 3
 _C.BISENET.SPATIAL_PATH_OUT_CHANNELS = 128
 _C.BISENET.CONTEXT_PATH_OUT_CHANNELS = 128
 _C.BISENET.DROP_RATE = 0.1
-_C.BISENET.USE_AUX = True
 
 # ---------------------------------------------------------------------------- #
 # contextnet options
@@ -145,7 +141,6 @@ _C.ContextNet.LAYERS = [1, 1, 3, 3, 2, 2]
 _C.ContextNet.HIDDEN_CHANNELS1 = 32
 _C.ContextNet.HIDDEN_CHANNELS2 = 64
 _C.ContextNet.OUT_CHANNELS = 128
-_C.ContextNet.USE_AUX = False
 
 # ---------------------------------------------------------------------------- #
 # SOLVER options

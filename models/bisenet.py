@@ -32,7 +32,7 @@ class BiSeNet(nn.Module):
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         self.dropout = cfg.BISENET.DROP_RATE
-        self.aux = cfg.BISENET.USE_AUX
+        self.aux = cfg.MODEL.USE_AUX
 
         if self.output_stride != 32:
             raise Exception("bisenet only supported output_stride == 32")
@@ -63,14 +63,18 @@ class BiSeNet(nn.Module):
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
         spatial_out = self.spatial_path(x)
         context_out, context_auxout = self.context_path(x)
         ffm_out = self.ffm([spatial_out, context_out])
         out = self.head(ffm_out)
+        out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
 
         if self.aux:
             auxout1 = self.auxlayer1(context_auxout[0])
             auxout2 = self.auxlayer2(context_auxout[1])
+            auxout1 = F.interpolate(auxout1, size=out_size, mode='bilinear', align_corners=True)
+            auxout2 = F.interpolate(auxout2, size=out_size, mode='bilinear', align_corners=True)
             return out, auxout1, auxout2
         return out
 

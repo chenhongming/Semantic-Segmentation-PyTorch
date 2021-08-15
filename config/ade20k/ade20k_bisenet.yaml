@@ -1,7 +1,7 @@
 DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
   VAL_JSON: ADEChallengeData2016/val.json
-  CLASSES: 21
+  CLASSES: 151
 
 MODEL:
   NAME: 'bisenet'
@@ -15,9 +15,6 @@ MODEL:
   PRETRAINED: True
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"
   OUTPUT_STRIDE: 32
-
-BISENET:
-  USE_AUX: True
 
 GPU_USE: True
 GPU_IDS: u'0,1'
