@@ -3,9 +3,12 @@ DATA:
   VAL_JSON: ADEChallengeData2016/val.json
   CLASSES: 151
 
+TRAIN:
+  BATCH_SIZE: 2
+
 MODEL:
   NAME: 'psp'
-  BACKBONE_NAME: 'mobilenet_v3_small'
+  BACKBONE_NAME: 'resnet152'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'

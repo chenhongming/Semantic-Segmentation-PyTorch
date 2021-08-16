@@ -3,9 +3,12 @@ DATA:
   VAL_JSON: ADEChallengeData2016/val.json
   CLASSES: 151
 
+TRAIN:
+  BATCH_SIZE: 2
+
 MODEL:
   NAME: 'denseaspp'
-  BACKBONE_NAME: 'densenet121'
+  BACKBONE_NAME: 'densenet201'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'

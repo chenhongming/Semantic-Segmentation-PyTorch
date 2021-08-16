@@ -33,7 +33,7 @@ class DeepLabV3plus(nn.Module):
 
         if self.output_stride != 16:
             raise Exception("deeplabv3plus only supported output_stride == 16")
-        if not self.backbone_name.startswith('resnet') or self.backbone_name.startswith('mobilenet_v1'):
+        if not (self.backbone_name.startswith('resnet') or self.backbone_name.startswith('mobilenet_v1')):
             raise Exception("Unsupported backbone")
         self.backbone = set_backbone()
         self.head = DeepLabV3plusHead(self.backbone.dim_out[0], self.backbone.dim_out[-1], self.out_channels,

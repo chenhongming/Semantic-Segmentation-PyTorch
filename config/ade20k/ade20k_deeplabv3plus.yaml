@@ -3,9 +3,11 @@ DATA:
   VAL_JSON: ADEChallengeData2016/val.json
   CLASSES: 151
 
+TRAIN:
+  BATCH_SIZE: 2
 MODEL:
   NAME: 'deeplabv3plus'
-  BACKBONE_NAME: 'resnet18'
+  BACKBONE_NAME: 'resnet152'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'

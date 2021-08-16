@@ -16,13 +16,13 @@ from solver.loss import set_loss
 from solver.optimizer import set_optimizer
 from solver.scheduler import set_scheduler
 from utils.utils import setup_logger, setup_seed
-from utils.misc import check_mkdir, params_flops
+from utils.misc import check_mkdir, params_flops, get_lr
 
 
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_deeplabv3.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_psp.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
@@ -108,12 +108,11 @@ def main():
 
 def train(model, loader, criterion, optimizer, scheduler, epoch, device):
     # switch to train model
-    model.train()
+    model.to(device).train()
 
     desc = f'Epoch {epoch}/{cfg.TRAIN.MAX_EPOCH}'
     with tqdm(total=len(loader), desc=desc) as pbar:
         for index, (images, masks) in enumerate(loader):
-            time.sleep(0.05)
 
             # load data to device
             images = images.to(device)
@@ -128,7 +127,7 @@ def train(model, loader, criterion, optimizer, scheduler, epoch, device):
             optimizer.step()
             scheduler.step()
 
-            pbar.set_postfix(**{'loss': loss.item(), 'lr': random.random()})
+            pbar.set_postfix(**{'loss': loss.item(), 'lr': get_lr(optimizer)})
             pbar.update(1)
 
 

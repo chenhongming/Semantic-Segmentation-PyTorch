@@ -24,18 +24,16 @@ class Criterion(nn.Module):
             raise Exception("Unsupported loss function: {}".format(name))
 
     def forward(self, preds, labels):
-        if len(preds) == 2:
-            print(preds[0].shape, labels.shape)
+        if len(preds) == 2 and isinstance(preds, tuple):
             main_loss = self.criterion(preds[0], labels)
             aux_loss = self.criterion(preds[1], labels)
             loss = main_loss + cfg.MODEL.AUX_LOSS_WEIGHT * aux_loss
             return loss
-        elif len(preds) == 3:  # for 'bisenet'
+        elif len(preds) == 3 and isinstance(preds, tuple):  # for 'bisenet'
             main_loss = self.criterion(preds[0], labels)
             aux1_loss = self.criterion(preds[1], labels)
             aux2_loss = self.criterion(preds[2], labels)
             loss = main_loss + cfg.MODEL.AUX_LOSS_WEIGHT * aux1_loss + cfg.MODEL.AUX2_LOSS_WEIGHT * aux2_loss
             return loss
-        print(preds[0].shape, labels.shape)
         loss = self.criterion(preds, labels)
         return loss

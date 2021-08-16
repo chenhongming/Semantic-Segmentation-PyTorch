@@ -30,7 +30,7 @@ class LRASPP(nn.Module):
         self.inter_channels = cfg.LRASPP.INTER_CHANNELS
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         assert self.zoom_factor in [1, 2, 4, 8]
-        if not self.backbone_name.startswith('resnet') or self.backbone_name.startswith('mobilenet_v1'):
+        if not (self.backbone_name.startswith('resnet') or self.backbone_name.startswith('mobilenet_v1')):
             raise Exception("Unsupported backbone")
 
         self.backbone = set_backbone()

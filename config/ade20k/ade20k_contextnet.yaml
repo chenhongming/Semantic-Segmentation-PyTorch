@@ -3,7 +3,7 @@ DATA:
   VAL_JSON: ADEChallengeData2016/val.json
   CLASSES: 151
 TRAIN:
-  BATCH_SIZE: 16
+  BATCH_SIZE: 2
   MAX_EPOCH: 50
 MODEL:
   NAME: 'contextnet' # no backbone
