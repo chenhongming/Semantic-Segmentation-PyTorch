@@ -40,7 +40,7 @@ def load_pretrained_model(model):
 
 
 def load_resume_state():
-    state_file = root_path() + cfg.MODEL.STATE_WEIGHT
+    state_file = root_path() + cfg.MODEL.MODEL_WEIGHT
     suffix = os.path.splitext(state_file)[-1]
     if os.path.isfile(state_file) and suffix == '.pth':
         return torch.load(state_file)

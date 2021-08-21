@@ -63,7 +63,6 @@ _C.MODEL.FINETUNE = False
 _C.MODEL.NAME = 'psp'
 _C.MODEL.PRETRAINED = True
 _C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
-_C.MODEL.STATE_WEIGHT = "ckpts/ade20k/state.pth"
 # output.size * room_factor
 _C.MODEL.ZOOM_FACTOR = 8
 _C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone
