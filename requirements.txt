@@ -1,0 +1,7 @@
+matplotlib==3.4.3
+numpy==1.21.1
+thop==0.0.31
+torch==1.9.0
+torchvision==0.10.0
+tqdm==4.62.0
+yacs==0.1.8
