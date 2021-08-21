@@ -15,7 +15,9 @@ from models.model_zone import generate_model, load_resume_state
 from solver.loss import set_loss
 from solver.optimizer import set_optimizer
 from solver.scheduler import set_scheduler
-from utils.utils import setup_logger, setup_seed
+from utils.utils import setup_logger, setup_seed, AverageMeter
+from utils.plot import Writer
+from utils.save import save_checkpoint
 from utils.misc import check_mkdir, params_flops, get_lr
 
 
@@ -54,7 +56,7 @@ def main():
     input_augmentation = set_augmentations(cfg)
 
     # Setup Dataloader
-    train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON,
+    train_set = dataset.JsonDataset(json_path=cfg.DATA.VAL_JSON,
                                     split=cfg.MODEL.PHASE,
                                     batch_size=cfg.TRAIN.BATCH_SIZE,
                                     crop_size=cfg.TRAIN.CROP_SIZE,
@@ -68,9 +70,6 @@ def main():
     # Setup Model
     model = generate_model()
     logger.info("Training model:\n\033[1;34m{} \033[0m".format(model))
-    # x = torch.rand((2, 3, 512, 512))
-    # o = model(x)
-    # print(o[0].size())
 
     # Setup Params and Flops
     params_flops(model, cfg.TRAIN.CROP_SIZE, device)
@@ -82,7 +81,7 @@ def main():
     optimizer = set_optimizer(model)
 
     # Setup Scheduler
-    scheduler = set_scheduler(optimizer)
+    lr_scheduler = set_scheduler(optimizer)
 
     # Setup Resume
     if cfg.MODEL.RESUME:
@@ -91,7 +90,7 @@ def main():
         logger.info('resume train from epoch: {}'.format(cfg.TRAIN.START_EPOCH))
         if ckpt_state['optimizer'] is not None and ckpt_state['lr_scheduler'] is not None:
             optimizer.load_state_dict(ckpt_state['optimizer'])
-            scheduler.load_state_dict(ckpt_state['scheduler'])
+            scheduler.load_state_dict(ckpt_state['lr_scheduler'])
             logger.info('resume optimizer and lr scheduler from resume state...')
 
     # Setup Output dir
@@ -100,35 +99,48 @@ def main():
     if args.cfg_file is not None:
         shutil.copyfile(args.cfg_file, os.path.join(cfg.CKPT, args.cfg_file.split('/')[-1]))
 
+    # Setup Draw curve
+    writer = Writer(cfg.CKPT)
+
     # main loop
+    logger.info("\n\t\t\t>>>>> Start training >>>>>")
     for epoch in range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH+1):
-        logger.info("\n\t\t\t>>>>> Start training >>>>>")
-        train(model, train_loader, criterion, optimizer, scheduler, epoch, device)
+        train_loss = train(model, train_loader, criterion, optimizer, lr_scheduler, epoch, device)
+        writer.append([epoch, train_loss])
+        writer.draw_curve(cfg.MODEL.NAME)
+        if epoch % cfg.TRAIN.SAVE_EPOCH == 0:
+            save_checkpoint(cfg.CKPT, epoch, model, optimizer, lr_scheduler)
 
 
-def train(model, loader, criterion, optimizer, scheduler, epoch, device):
+def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device):
+    ave_total_loss = AverageMeter()
     # switch to train model
     model.to(device).train()
-
     desc = f'Epoch {epoch}/{cfg.TRAIN.MAX_EPOCH}'
     with tqdm(total=len(loader), desc=desc) as pbar:
         for index, (images, masks) in enumerate(loader):
-
             # load data to device
             images = images.to(device)
             masks = masks.to(device)
+
             # forward
             outputs = model(images)
             loss = criterion(outputs, masks)
             loss = loss.mean()
+
             # backward
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler.step()
+            lr_scheduler.step()
 
-            pbar.set_postfix(**{'loss': loss.item(), 'lr': get_lr(optimizer)})
+            # record loss
+            ave_total_loss.update(loss.item())
+
+            # display msg
+            pbar.set_postfix(**{'loss': ave_total_loss.avg, 'lr': get_lr(optimizer)})
             pbar.update(1)
+    return ave_total_loss.avg
 
 
 if __name__ == '__main__':

@@ -1,11 +1,18 @@
+import math
 import torch
 import torchvision
 import torchvision.models as models
 
-model = models.mobilenet_v2()
-print(torch.__version__)
-print(torchvision.__version__)
+from config.config import cfg
+from utils.plot import Writer
 
-x = torch.rand([2, 3, 65, 65])
-o = model(x)
-print(o.size())
+# model = models.mobilenet_v2()
+# print(torch.__version__)
+# print(torchvision.__version__)
+#
+# x = torch.rand([2, 3, 65, 65])
+# o = model(x)
+# print(o.size())
+
+writer = Writer(cfg.CKPT)
+writer.draw_curve(cfg.MODEL.NAME)

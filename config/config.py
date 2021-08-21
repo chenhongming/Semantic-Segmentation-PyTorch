@@ -45,6 +45,7 @@ _C.TRAIN.PADDING = (0, 0, 0)
 _C.TRAIN.IGNORE_LABEL = 255
 _C.TRAIN.START_EPOCH = 1
 _C.TRAIN.MAX_EPOCH = 100
+_C.TRAIN.SAVE_EPOCH = 10
 
 # ---------------------------------------------------------------------------- #
 # Model options
