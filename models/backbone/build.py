@@ -9,6 +9,7 @@ from utils.utils import setup_logger, root_path
 from config.config import cfg
 
 BACKBONE_REGISTRY = Registry('backbone')
+logger = setup_logger('build-logger')
 
 model_urls = {
     'vgg11': 'https://download.pytorch.org/models/vgg11-bbd30ac9.pth',
@@ -61,7 +62,6 @@ def set_backbone():
 def load_pretrain_backbone(backbone, backbone_name):
     pretrained_file = root_path() + cfg.MODEL.BACKBONE_WEIGHT
 
-    logger = setup_logger('build-logger')
     if os.path.isfile(pretrained_file) and os.path.splitext(pretrained_file)[-1] == '.pth':
         logger.info("Load backbone pretrained model from {}".format(cfg.MODEL.BACKBONE_WEIGHT))
         ckpt = torch.load(pretrained_file)
@@ -134,3 +134,18 @@ def _load_densenet_dict(state_dict):
             state_dict[new_key] = state_dict[key]
             del state_dict[key]
     return state_dict
+
+
+def load_trained_model(model):
+    model_file = root_path() + cfg.MODEL.MODEL_WEIGHT
+    suffix = os.path.splitext(model_file)[-1]
+    if os.path.isfile(model_file) and suffix == '.pth':
+        ckpt = torch.load(model_file)['state_dict']
+        model_dict = model.state_dict()
+        matched_weights, unmatched_weights = weight_filler(ckpt, model_dict)
+        logger.info("Unmatched model layers: {}".format(unmatched_weights))
+        model.load_state_dict(matched_weights, strict=True)
+        logger.info('Loaded trained model weights!')
+    else:
+        raise Exception("{} is not a valid pth file".format(model_file))
+    return model

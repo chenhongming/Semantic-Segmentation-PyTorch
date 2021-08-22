@@ -11,7 +11,7 @@ MODEL_REGISTRY = Registry('model')
 def generate_model():
     name = cfg.MODEL.NAME
     model = MODEL_REGISTRY.get(name)()
-    if cfg.MODEL.PRETRAINED:
+    if cfg.MODEL.BACKBONE_PRETRAINED:
         model = load_pretrained_model(model)
     return model
 

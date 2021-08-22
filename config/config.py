@@ -21,7 +21,7 @@ _C.DATA.DATASET = 'ade20k'
 _C.DATA.TRAIN_JSON = ""
 _C.DATA.VAL_JSON = ""
 _C.DATA.TEST_JSON = ""
-_C.DATA.CLASSES = 150
+_C.DATA.CLASSES = 151
 _C.DATA.MEAN = [0.485, 0.456, 0.406]
 _C.DATA.STD = [0.229, 0.224, 0.225]
 
@@ -45,7 +45,16 @@ _C.TRAIN.PADDING = (0, 0, 0)
 _C.TRAIN.IGNORE_LABEL = 255
 _C.TRAIN.START_EPOCH = 1
 _C.TRAIN.MAX_EPOCH = 100
-_C.TRAIN.SAVE_EPOCH = 10
+_C.TRAIN.SAVE_EPOCH = 2
+
+# ---------------------------------------------------------------------------- #
+# EVAL options
+# ---------------------------------------------------------------------------- #
+_C.EVAL = CN()
+_C.EVAL.BATCH_SIZE = 2
+_C.EVAL.CROP_SIZE = [640, 512]
+_C.EVAL.PADDING = (0, 0, 0)
+_C.EVAL.IGNORE_LABEL = 255
 
 # ---------------------------------------------------------------------------- #
 # Model options
@@ -61,8 +70,7 @@ _C.MODEL.PHASE = 'train'  # if test mode, RESUME and FINETUNE must be False
 _C.MODEL.RESUME = False
 _C.MODEL.FINETUNE = False
 _C.MODEL.NAME = 'psp'
-_C.MODEL.PRETRAINED = True
-_C.MODEL.MODEL_WEIGHT = "ckpts/ade20k/model.pth"
+_C.MODEL.MODEL_WEIGHT = ""
 # output.size * room_factor
 _C.MODEL.ZOOM_FACTOR = 8
 _C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone

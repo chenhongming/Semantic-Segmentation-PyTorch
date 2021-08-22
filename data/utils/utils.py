@@ -20,7 +20,7 @@ def unified_size(image, mask, crop_size, padding=(0, 0, 0), ignore_label=255):
     else:
         w_off = (w - crop_w) // 2
         h_off = (h - crop_h) // 2
-        border = (w_off, h_off, (crop_w - w) - w_off, (crop_h - h) - h_off)
+        border = (w_off, h_off, (w - crop_w) - w_off, (h - crop_h) - h_off)
         image = ImageOps.crop(image, border=border)
         mask = ImageOps.crop(mask, border=border)
     return image, mask

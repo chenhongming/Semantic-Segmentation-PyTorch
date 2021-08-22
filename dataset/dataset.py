@@ -29,7 +29,7 @@ class JsonDataset(Dataset):
         mask = Image.open(self.root + self.json_file[index].split(' ')[1])
         if self.augmentations is not None:
             image, mask = self.augmentations(image, mask)
-        if self.split == 'train' and self.batch_size > 1:
+        if (self.split == 'train' or self.split == 'val') and self.batch_size > 1:
             image, mask = unified_size(image, mask, self.crop_size, self.padding, self.ignore_label)
         if self.transform is not None:
             image = self.transform(image)

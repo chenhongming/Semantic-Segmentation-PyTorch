@@ -1,4 +1,5 @@
 import os
+import copy
 import time
 import torch
 import shutil
@@ -56,7 +57,7 @@ def main():
     input_augmentation = set_augmentations(cfg)
 
     # Setup Dataloader
-    train_set = dataset.JsonDataset(json_path=cfg.DATA.VAL_JSON,
+    train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON,
                                     split=cfg.MODEL.PHASE,
                                     batch_size=cfg.TRAIN.BATCH_SIZE,
                                     crop_size=cfg.TRAIN.CROP_SIZE,
@@ -72,7 +73,7 @@ def main():
     logger.info("Training model:\n\033[1;34m{} \033[0m".format(model))
 
     # Setup Params and Flops
-    params_flops(model, cfg.TRAIN.CROP_SIZE, device)
+    params_flops(copy.deepcopy(model), cfg.TRAIN.CROP_SIZE, device)
 
     # Setup Loss
     criterion = set_loss().to(device)
