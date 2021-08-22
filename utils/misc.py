@@ -24,6 +24,7 @@ def params_flops(net, size, device):
     flops, params = clever_format([flops, params], "%.3f")
     logger.info("Model: {}({}) | Flops: {} | Params: {}".format(net.__class__.__name__, cfg.MODEL.BACKBONE_NAME,
                                                                 flops, params) + '\n')
+    del net
 
 
 def get_lr(optimizer):
