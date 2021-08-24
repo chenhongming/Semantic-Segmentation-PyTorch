@@ -15,5 +15,5 @@ from utils.plot import Writer
 # o = model(x)
 # print(o.size())
 
-writer = Writer(cfg.CKPT)
-writer.draw_curve(cfg.MODEL.NAME)
+# writer = Writer(cfg.CKPT)
+# writer.draw_curve(cfg.MODEL.NAME)
