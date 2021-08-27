@@ -1,3 +1,4 @@
+import os
 import math
 import torch
 import cv2 as cv
@@ -17,3 +18,12 @@ from utils.plot import Writer
 
 # writer = Writer(cfg.CKPT)
 # writer.draw_curve(cfg.MODEL.NAME)
+
+capture = cv.VideoCapture(0)
+while capture.isOpened():
+    ret, frame = capture.read()
+    cv.imshow("frame", frame)
+    if cv.waitKey(1) & 0xFF == ord("q"):
+        break
+capture.release()
+cv.destroyAllWindows()

@@ -64,7 +64,8 @@ class ContextNet(nn.Module):
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
+        x_size = x.size()[2:]  # for test
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
         size = (x.size()[2] // 4, x.size()[3] // 4)
         s = self.shadow_net(x)
 
@@ -75,6 +76,8 @@ class ContextNet(nn.Module):
             auxout = self.auxlayer(x)
             auxout = F.interpolate(auxout, size=out_size, mode='bilinear', align_corners=True)
             return out, auxout
+        if cfg.MODEL.PHASE == 'test':
+            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 
 

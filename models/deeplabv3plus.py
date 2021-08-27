@@ -22,14 +22,12 @@ class DeepLabV3plus(nn.Module):
         super().__init__()
 
         self.classes = cfg.DATA.CLASSES
-        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
         self.backbone_name = cfg.MODEL.BACKBONE_NAME
         self.dropout = cfg.DEEPLABV3PLUS.DROPOUT
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.low_level_feature_channels = cfg.DEEPLABV3PLUS.LOW_LEVEL_FEATURE_CHANNELS
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         self.out_channels = cfg.ASPP.OUT_CHANNELS  # default 512
-        assert self.zoom_factor in [1, 2, 4, 8]
 
         if self.output_stride != 16:
             raise Exception("deeplabv3plus only supported output_stride == 16")
@@ -49,7 +47,8 @@ class DeepLabV3plus(nn.Module):
         )
 
     def forward(self, x):
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
+        x_size = x.size()[2:]  # for test
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
 
         c2, _, c4, c5 = self.backbone(x)
         out = self.head([c2, c5])
@@ -60,6 +59,8 @@ class DeepLabV3plus(nn.Module):
             aux_out = self.output(aux_out)
             aux_out = F.interpolate(aux_out, size=out_size, mode='bilinear', align_corners=True)
             return out, aux_out
+        if cfg.MODEL.PHASE == 'test':
+            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 
 

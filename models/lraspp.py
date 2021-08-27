@@ -24,12 +24,10 @@ class LRASPP(nn.Module):
         super().__init__()
 
         self.classes = cfg.DATA.CLASSES
-        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
         self.backbone_name = cfg.MODEL.BACKBONE_NAME
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.inter_channels = cfg.LRASPP.INTER_CHANNELS
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
-        assert self.zoom_factor in [1, 2, 4, 8]
         if not (self.backbone_name.startswith('resnet') or self.backbone_name.startswith('mobilenet_v1')):
             raise Exception("Unsupported backbone")
 
@@ -38,11 +36,14 @@ class LRASPP(nn.Module):
                                self.inter_channels, self.classes, self.norm_layer)
 
     def forward(self, x):
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
+        x_size = x.size()[2:]  # for test
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
 
         c2, _, _, c5 = self.backbone(x)
         out = self.head([c2, c5])
         out = F.interpolate(out, out_size, mode='bilinear', align_corners=True)
+        if cfg.MODEL.PHASE == 'test':
+            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 
 

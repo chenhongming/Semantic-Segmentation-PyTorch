@@ -32,8 +32,6 @@ class PSPNet(nn.Module):
         self.ppm_out_dim = cfg.PPM.PPM_OUT_DIM
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
-        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
-        assert self.zoom_factor in [1, 2, 4, 8]
 
         if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("Not supported bankbone!")
@@ -51,17 +49,19 @@ class PSPNet(nn.Module):
         )
 
     def forward(self, x):
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
+        x_size = x.size()[2:]  # for test
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
 
         _, _, c4, c5 = self.backbone(x)
         c5 = self.head(c5)
         out = self.output(c5)
-        out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
         if cfg.MODEL.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
             aux_out = self.aux(c4)
             aux_out = self.output(aux_out)
             aux_out = F.interpolate(aux_out, size=out_size, mode='bilinear', align_corners=True)
             return out, aux_out
+        if cfg.MODEL.PHASE == 'test':
+            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 
 

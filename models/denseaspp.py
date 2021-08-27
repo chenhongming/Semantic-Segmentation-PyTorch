@@ -29,7 +29,6 @@ class DenseASPP(nn.Module):
         super().__init__()
 
         self.classes = cfg.DATA.CLASSES
-        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
         self.backbone_name = cfg.MODEL.BACKBONE_NAME
         self.output_stride = cfg.DENSEASPP.OUTPUT_STRIDE
         self.inter_channels = cfg.DENSEASPP.INTER_CHANNELS
@@ -37,7 +36,6 @@ class DenseASPP(nn.Module):
         self.atrous_rate = cfg.DENSEASPP.ATROUS_RATE
         self.drop_rate = cfg.DENSEASPP.DROP_RATE
         self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
-        assert self.zoom_factor in [1, 2, 4, 8]
 
         if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("Not supported bankbone!")
@@ -55,7 +53,8 @@ class DenseASPP(nn.Module):
         )
 
     def forward(self, x):
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)
+        x_size = x.size()[2:]  # for test
+        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
 
         _, _, c4, c5 = self.backbone(x)
         c5 = self.head(c5)
@@ -65,6 +64,8 @@ class DenseASPP(nn.Module):
             aux_out = self.output(aux_out)
             aux_out = F.interpolate(aux_out, size=out_size, mode='bilinear', align_corners=True)
             return out, aux_out
+        if cfg.MODEL.PHASE == 'test':
+            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 
 

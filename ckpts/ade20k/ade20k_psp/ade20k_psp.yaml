@@ -12,10 +12,10 @@ MODEL:
   BACKBONE_PRETRAINED: False
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'
-  PHASE: 'val'
+  PHASE: 'train'
   RESUME: False
   FINETUNE: False
-  MODEL_WEIGHT: "ckpts/ade20k/ade20k_contextnet/psp_shufflenet_v2_x0_5_ade20k_Eopoch_2_model.pth"
+  MODEL_WEIGHT: "ckpts/ade20k/ade20k_psp/psp_shufflenet_v2_x0_5_ade20k_Eopoch_2_model.pth"
   ZOOM_FACTOR: 1
   OUTPUT_STRIDE: 8
 

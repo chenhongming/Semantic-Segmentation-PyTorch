@@ -7,15 +7,14 @@ TRAIN:
   BATCH_SIZE: 2
 
 MODEL:
+  PHASE: 'train'
   NAME: 'lraspp'
   BACKBONE_NAME: 'resnet152'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'
-  PHASE: 'train'
   RESUME: False
   FINETUNE: False
-  PRETRAINED: True
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"
   OUTPUT_STRIDE: 32
 

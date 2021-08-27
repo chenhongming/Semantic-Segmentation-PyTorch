@@ -57,6 +57,14 @@ _C.EVAL.PADDING = (0, 0, 0)
 _C.EVAL.IGNORE_LABEL = 255
 
 # ---------------------------------------------------------------------------- #
+# EVAL options
+# ---------------------------------------------------------------------------- #
+_C.TEST = CN()
+_C.TEST.MODE = 'image'  # method: image or video
+_C.TEST.IMAGE_PATH = ""
+_C.TEST.VIDEO_PATH = ""   # "": realtime camera; "path": local video
+
+# ---------------------------------------------------------------------------- #
 # Model options
 # ---------------------------------------------------------------------------- #
 _C.MODEL = CN()
@@ -71,8 +79,6 @@ _C.MODEL.RESUME = False
 _C.MODEL.FINETUNE = False
 _C.MODEL.NAME = 'psp'
 _C.MODEL.MODEL_WEIGHT = ""
-# output.size * room_factor
-_C.MODEL.ZOOM_FACTOR = 8
 _C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone
 _C.MODEL.DROP_RATE = 0.1  # for densenet
 _C.MODEL.USE_AUX = True  # c3 must be not None if USE_AUX is True. See segmentation model define

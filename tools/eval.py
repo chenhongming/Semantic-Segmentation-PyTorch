@@ -1,16 +1,13 @@
 import os
 import time
 import torch
-import shutil
-import random
 import argparse
 
-from tqdm import tqdm
 from torchvision import transforms
 
 import _init_path
 from config.config import cfg, merge_cfg_from_file, merge_cfg_from_list, logger_cfg_from_file
-from dataset import dataset, set_augmentations
+from dataset import dataset
 from models.backbone.build import load_trained_model
 from models.model_zone import generate_model
 from utils.utils import setup_logger, AverageMeter
@@ -64,9 +61,6 @@ def main():
 
     # load trained model weights
     model = load_trained_model(model)
-    # # Setup result dir
-    # if not os.path.isdir(os.path.join(cfg.CKPT, 'results')):
-    #     check_mkdir(os.path.join(cfg.CKPT, 'results'))
 
     # main loop
     logger.info("\n\t\t\t>>>>> Start Evaluating >>>>>")

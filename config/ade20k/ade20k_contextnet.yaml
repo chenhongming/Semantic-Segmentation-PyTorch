@@ -6,13 +6,12 @@ TRAIN:
   BATCH_SIZE: 2
   MAX_EPOCH: 50
 MODEL:
+  PHASE: 'train'
   NAME: 'contextnet' # no backbone
   BACKBONE_NAME: None
   NORM_LAYER: 'bn'
-  PHASE: 'train'
   RESUME: False
   FINETUNE: False
-  PRETRAINED: True
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"
   OUTPUT_STRIDE: 8
 
