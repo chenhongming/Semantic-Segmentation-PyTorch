@@ -14,3 +14,12 @@ git clone https://github.com/chenhongming/Semantic-Segmentation-PyTorch.git
 ```
 pip3 install -r requirements.txt
 ```  
+#### NOTE  
+It is recommended to modify it to a domestic download mirror source.
+```
+pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+```  
+or 
+```
+pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
