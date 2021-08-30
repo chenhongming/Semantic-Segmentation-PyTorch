@@ -37,7 +37,7 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 * dataset structure
 
-Whether it is a `public` semantic segmentation dataset or a `priv` dataset, the following data format is finally generated.
+  Whether it is a `public` semantic segmentation dataset or a `priv` dataset, the following data format is finally generated.
 
 ```
 dataset name
