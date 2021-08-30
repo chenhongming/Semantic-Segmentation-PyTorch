@@ -4,6 +4,6 @@
 A platform for training and testing semantic segmentation models using PyTorch  
 ## Installation  
 ### 1. Clone the repository:  
-‘’‘
+'''
 git clone https://github.com/chenhongming/Semantic-Segmentation-PyTorch.git
-’‘’
+'''
