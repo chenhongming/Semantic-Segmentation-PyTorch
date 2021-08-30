@@ -25,4 +25,7 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 ```  
 ## Get Started  
 ### 1. Dataset Prepare  
-
+* public dataset
+Support cityscape, ade20k, voc, voc_aug, camvid, kitti, mscoco, lip, mapillary now.  
+We performed simple preprocessing on these public semantic segmentation datasets and converted them into json format.
+* priv dataset
