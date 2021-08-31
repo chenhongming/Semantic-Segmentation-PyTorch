@@ -5,8 +5,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 from config.config import cfg
-from data.utils.utils import unified_size
-from utils.utils import root_path
+from utils.utils import unified_size, root_path
 
 
 class JsonDataset(Dataset):

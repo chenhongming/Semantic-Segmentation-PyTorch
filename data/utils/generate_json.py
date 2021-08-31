@@ -16,7 +16,7 @@ The format of the json file is: [image_path mask_path,
 DATASET_REGISTRY = Registry('dataset')
 
 class GenerateJson:
-    def __init__(self, root='../', split='train', check_pairs=[]):
+    def __init__(self, root='/Volumes/Backup Plus/dataset/Done/', split='train', check_pairs=[]):
         self.root = root
         self.split = split
         self.check_pairs = check_pairs
@@ -27,13 +27,13 @@ class GenerateJson:
             json.dump(lst, f, indent=4)
 
     @DATASET_REGISTRY.register()
-    def cityscapes2json(self, json_path="../Cityscapes/"):
+    def cityscapes2json(self, json_path= "/Cityscapes/"):
         assert self.split in ('train', 'val', 'test')
         if self.split == 'test':
             images_path = glob.glob(self.root + "Cityscapes/leftImg8bit_trainvaltest/leftImg8bit/" +
                                     self.split + "/*/*leftImg8bit.png")
             print("images:", len(images_path))
-            self.check_pairs = [item[len(root):] for item in images_path]
+            self.check_pairs = [item[len(self.root):] for item in images_path]
         else:
             images_path = glob.glob(self.root + "Cityscapes/leftImg8bit_trainvaltest/leftImg8bit/" +
                                     self.split + "/*/*leftImg8bit.png")
@@ -43,8 +43,8 @@ class GenerateJson:
             assert len(images_path) == len(masks_path)
             for image_path in images_path:
                 mask_path = image_path.replace('images', 'gtFine').replace('leftImg8bit', 'gtFine_labelTrainIds')
-                self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
-        self.write_json(self.check_pairs, json_path)
+                self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def ade20k2json(self, json_path="../ADEChallengeData2016/"):
@@ -59,8 +59,8 @@ class GenerateJson:
         assert len(images_path) == len(masks_path)
         for image_path in images_path:
             mask_path = image_path.replace('images', 'annotations').replace('jpg', 'png')
-            self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
-        self.write_json(self.check_pairs, json_path)
+            self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def voc2json(self, json_path="../Pascal VOC/"):
@@ -73,11 +73,11 @@ class GenerateJson:
                 image_path = self.root + "Pascal VOC/" + i + "/JPEGImages/" + item + ".jpg"
                 mask_path = self.root + "Pascal VOC/" + i + "/SegmentationClass/" + item + "_mask.png"
                 if os.path.isfile(image_path) and os.path.isfile(mask_path):
-                    self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                    self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                 else:
                     raise Exception("{} or {} is not a file".format(image_path, mask_path))
         print('images:', len(self.check_pairs), 'masks:', len(self.check_pairs))
-        self.write_json(self.check_pairs,json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def voc_aug2json(self, json_path="../Pascal VOC_aug/benchmark_RELEASE/dataset"):
@@ -88,11 +88,11 @@ class GenerateJson:
             image_path = self.root + "Pascal VOC_aug/benchmark_RELEASE/dataset/img/" + item + ".jpg"
             mask_path = self.root + "Pascal VOC_aug/benchmark_RELEASE/dataset/seg/" + item + ".png"
             if os.path.isfile(image_path) and os.path.isfile(mask_path):
-                self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
             else:
                 raise Exception("{} or {} is not a file".format(image_path, mask_path))
         print('images:', len(self.check_pairs), 'masks:', len(self.check_pairs))
-        self.write_json(self.check_pairs, json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def camvid2json(self, json_path="../Camvid/data/Camvid/"):
@@ -100,7 +100,7 @@ class GenerateJson:
         if self.split == 'test':
             images_path = glob.glob(self.root + "Camvid/data/Camvid/" + self.split + "/*.png")
             print("images:", len(images_path))
-            self.check_pairs = [item[len(root):] for item in images_path]
+            self.check_pairs = [item[len(self.root):] for item in images_path]
         else:
             images_path = glob.glob(self.root + "Camvid/data/Camvid/" + self.split + "/*.png")
             masks_path = glob.glob(self.root + "Camvid/data/Camvid/" + self.split + 'annot/' + "/*.png")
@@ -109,10 +109,10 @@ class GenerateJson:
             for image_path in images_path:
                 mask_path = image_path.replace(self.split, self.split + 'annot/')
                 if os.path.isfile(mask_path):
-                    self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                    self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                 else:
                     raise Exception("{} is not a file".format(mask_path))
-        self.write_json(self.check_pairs, json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def kitti2json(self, json_path="../KITTI/data_semantics/"):
@@ -124,7 +124,7 @@ class GenerateJson:
         if self.split == 'test':
             images_path = glob.glob(self.root + "KITTI/data_semantics/" + sp + "/image/*.png")
             print("images:", len(images_path))
-            self.check_pairs = [item[len(root):] for item in images_path]
+            self.check_pairs = [item[len(self.root):] for item in images_path]
         else:
             images_path = glob.glob(self.root + "KITTI/data_semantics/" + sp + "/image/*.png")
             masks_path = glob.glob(self.root + "KITTI/data_semantics/" + sp  + "/semantic/*.png")
@@ -133,10 +133,10 @@ class GenerateJson:
             for image_path in images_path:
                 mask_path = image_path.replace('image', 'semantic')
                 if os.path.isfile(mask_path):
-                    self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                    self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                 else:
                     raise Exception("{} is not a file".format(mask_path))
-        self.write_json(self.check_pairs, json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def mscoco2json(self, json_path="../MSCOCO/"):
@@ -152,10 +152,10 @@ class GenerateJson:
         for image_path in images_path:
             mask_path = image_path.replace('MSCOCO/', "MSCOCO/SegmentationClass/").replace('jpg', 'png')
             if os.path.isfile(mask_path):
-                self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
             else:
                 raise Exception("{} is not a file".format(mask_path))
-        self.write_json(self.check_pairs, json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def lip2json(self, json_path="../LIP/", extra=True):
@@ -177,7 +177,7 @@ class GenerateJson:
                     mask_path = image_path.replace('TrainVal_images/', "TrainVal_parsing_annotations/").\
                         replace('_images', '_segmentations').replace('jpg', 'png')
                     if os.path.isfile(mask_path):
-                        self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                        self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                     else:
                         raise Exception("{} is not a file".format(mask_path))
         if extra and self.split == 'train':
@@ -189,10 +189,10 @@ class GenerateJson:
                 for image_path in images_path:
                     mask_path = image_path.replace('JPEGImages/', "SegmentationClassAug/").replace('jpg', 'png')
                     if os.path.isfile(mask_path):
-                        self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                        self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                     else:
                         raise Exception("{} is not a file".format(mask_path))
-        self.write_json(self.check_pairs, json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     def mapillary2json(self, json_path="../mapillary_vistas_v2_part/"):
@@ -200,7 +200,7 @@ class GenerateJson:
         if self.split == 'test':
             images_path = glob.glob(self.root + "mapillary_vistas_v2_part/" + self.split + "/images/*.jpg")
             print("images:", len(images_path))
-            self.check_pairs = [item[len(root):] for item in images_path]
+            self.check_pairs = [item[len(self.root):] for item in images_path]
         else:
             images_path = glob.glob(self.root + "mapillary_vistas_v2_part/" + self.split + "/images/*.jpg")
             masks_path = glob.glob(self.root + "mapillary_vistas_v2_part/" + self.split + "/labels/*.png")
@@ -209,10 +209,10 @@ class GenerateJson:
             for image_path in images_path:
                 mask_path = image_path.replace('images/', "labels/").replace('jpg', 'png')
                 if os.path.isfile(mask_path):
-                    self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                    self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                 else:
                     raise Exception("{} is not a file".format(mask_path))
-        self.write_json(self.check_pairs, json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
     # used to generate priv dataset
@@ -221,7 +221,7 @@ class GenerateJson:
         if self.split == 'test':
             images_path = glob.glob(self.root + "priv/images/" + self.split + "/*.jpg")
             print("images:", len(images_path))
-            self.check_pairs = [item[len(root):] for item in images_path]
+            self.check_pairs = [item[len(self.root):] for item in images_path]
         else:
             images_path = glob.glob(self.root + "priv/images/" + self.split + "/*.jpg")
             masks_path = glob.glob(self.root + "priv/segmentations/" + self.split + "/*.png")
@@ -230,17 +230,17 @@ class GenerateJson:
             for image_path in images_path:
                 mask_path = image_path.replace('images', 'segmentations').replace('jpg', 'png')
                 if os.path.isfile(mask_path):
-                    self.check_pairs.append(image_path[len(root):] + ' ' + mask_path[len(root):])
+                    self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                 else:
                     raise Exception("{} is not a file".format(mask_path))
-        self.write_json(self.check_pairs, json_path)
+        self.write_json(self.check_pairs, self.root + json_path)
 
 
 if __name__ == '__main__':
-    generate_json = GenerateJson(split='train')
+    generate_json = GenerateJson(split='val')
 
     # registry method is more concise
-    DATASET_REGISTRY.get('ade20k2json')(generate_json)
+    DATASET_REGISTRY.get('cityscapes2json')(generate_json)
 
     # -------------------------------------
     # 'class calls' method is more tedious

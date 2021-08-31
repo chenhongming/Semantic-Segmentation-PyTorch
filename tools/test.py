@@ -34,9 +34,12 @@ def demo():
     # Setup Device
     if torch.cuda.is_available() and cfg.GPU_USE:
         # Set temporary environment variables
-        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(str(x) for x in cfg.GPU_IDS)
+        logger.info("Using GPU testing!!!")
+        logger.info("GPU ID: 0")
+        os.environ["CUDA_VISIBLE_DEVICES"] = '0'
         device = "cuda"
     else:
+        logger.info("Using CPU training!!!")
         device = 'cpu'
 
     # Setup input_transform and augmentations

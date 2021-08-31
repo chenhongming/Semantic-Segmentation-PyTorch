@@ -4,6 +4,7 @@ import torch
 
 from config.config import cfg
 from utils.utils import setup_logger
+logger = setup_logger('save-logger')
 
 
 def time_stamp():
@@ -23,6 +24,5 @@ def save_checkpoint(save_path, epoch, model, optimizer=None, lr_scheduler=None):
         'lr_scheduler': lr_scheduler.state_dict()
     }
 
-    logger = setup_logger('save-logger')
     torch.save(save_state, filename)
     logger.info('Epoch {} model saved in: {}'.format(epoch, filename))
