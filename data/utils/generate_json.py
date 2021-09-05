@@ -47,7 +47,7 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def ade20k2json(self, json_path="../ADEChallengeData2016/"):
+    def ade20k2json(self, json_path="/ADEChallengeData2016/"):
         assert self.split in ('train', 'val')
         if self.split == 'train':
             sp = 'training'
@@ -63,7 +63,7 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def voc2json(self, json_path="../Pascal VOC/"):
+    def voc2json(self, json_path="/Pascal VOC/"):
         assert self.split in ('train', 'val', 'trainval')
         year = ['VOC2007', 'VOC2012']
         for i in year:
@@ -80,7 +80,7 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def voc_aug2json(self, json_path="../Pascal VOC_aug/benchmark_RELEASE/dataset"):
+    def voc_aug2json(self, json_path="/Pascal VOC_aug/benchmark_RELEASE/dataset"):
         assert self.split in ('train', 'val')
         target_file = self.root + "Pascal VOC_aug/benchmark_RELEASE/dataset/" + self.split + ".txt"
         list_sample = [x.rstrip() for x in open(target_file, 'r')]
@@ -95,7 +95,7 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def camvid2json(self, json_path="../Camvid/data/Camvid/"):
+    def camvid2json(self, json_path="/Camvid/data/Camvid/"):
         assert self.split in ('train', 'val', 'test')
         if self.split == 'test':
             images_path = glob.glob(self.root + "Camvid/data/Camvid/" + self.split + "/*.png")
@@ -115,7 +115,7 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def kitti2json(self, json_path="../KITTI/data_semantics/"):
+    def kitti2json(self, json_path="/KITTI/data_semantics/"):
         assert self.split in ('train', 'test')
         if self.split == 'train':
             sp = 'training'
@@ -139,7 +139,7 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def mscoco2json(self, json_path="../MSCOCO/"):
+    def mscoco2json(self, json_path="/MSCOCO/"):
         assert self.split in ('train', 'val')
         if self.split == 'train':
             sp = 'train2017'
@@ -158,14 +158,14 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def lip2json(self, json_path="../LIP/", extra=True):
+    def lip2json(self, json_path="/LIP/", extra=True):
         assert self.split in ('train', 'val', 'test')
         _type = ['Multi-Person', 'Single-Person']
         for i in _type:
             if self.split == 'test':
                 images_path = glob.glob(self.root + "LIP/" + i + "-LIP/LIP/Testing_images/*.jpg")
                 print("images:", len(images_path))
-                self.check_pairs = [item[len(root):] for item in images_path]
+                self.check_pairs = [item[len(self.root):] for item in images_path]
             else:
                 images_path = glob.glob(self.root + "LIP/" + i + "-LIP/LIP/TrainVal_images/" +
                                         self.split +  "_images/*.jpg")
@@ -195,7 +195,7 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def mapillary2json(self, json_path="../mapillary_vistas_v2_part/"):
+    def mapillary2json(self, json_path="/mapillary_vistas_v2_part/"):
         assert self.split in ('train', 'val', 'test')
         if self.split == 'test':
             images_path = glob.glob(self.root + "mapillary_vistas_v2_part/" + self.split + "/images/*.jpg")
@@ -216,7 +216,7 @@ class GenerateJson:
 
     @DATASET_REGISTRY.register()
     # used to generate priv dataset
-    def priv2json(self, json_path="../priv/"):
+    def priv2json(self, json_path="/priv/"):
         assert self.split in ('train', 'val', 'test')
         if self.split == 'test':
             images_path = glob.glob(self.root + "priv/images/" + self.split + "/*.jpg")
@@ -240,7 +240,7 @@ if __name__ == '__main__':
     generate_json = GenerateJson(split='val')
 
     # registry method is more concise
-    DATASET_REGISTRY.get('cityscapes2json')(generate_json)
+    DATASET_REGISTRY.get('mapillary2json')(generate_json)
 
     # -------------------------------------
     # 'class calls' method is more tedious

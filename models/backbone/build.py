@@ -4,9 +4,10 @@ import torch
 from collections import OrderedDict
 from torch.hub import load_state_dict_from_url as load_url  # noqa: F401
 
+from config.config import cfg
 from utils.registry import Registry
 from utils.utils import setup_logger, root_path
-from config.config import cfg
+from utils.distributed import is_main_process
 
 BACKBONE_REGISTRY = Registry('backbone')
 logger = setup_logger('build-logger')
@@ -63,44 +64,52 @@ def load_pretrain_backbone(backbone, backbone_name):
     pretrained_file = root_path() + cfg.MODEL.BACKBONE_WEIGHT
 
     if os.path.isfile(pretrained_file) and os.path.splitext(pretrained_file)[-1] == '.pth':
-        logger.info("Load backbone pretrained model from {}".format(cfg.MODEL.BACKBONE_WEIGHT))
+        if is_main_process():
+            logger.info("Load backbone pretrained model from {}".format(cfg.MODEL.BACKBONE_WEIGHT))
         ckpt = torch.load(pretrained_file)
         if backbone_name.startswith('densenet'):
             ckpt = _load_densenet_dict(ckpt)
         backbone_dict = backbone.state_dict()
         matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
-        logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+        if is_main_process():
+            logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+            logger.info('Loaded!')
         backbone.load_state_dict(matched_weights, strict=False)
-        logger.info('Loaded!')
     elif backbone_name in model_urls:
         # default download path using torch.hub import load_state_dict_from_url method
         cached_file = os.path.expanduser("~/.cache/torch/hub/checkpoints/" + model_urls[backbone_name].split('/')[-1])
         if os.path.isfile(cached_file) and os.path.splitext(cached_file)[-1] == '.pth':
-            logger.info("Load backbone pretrained model from {}".format(cached_file))
+            if is_main_process():
+                logger.info("Load backbone pretrained model from {}".format(cached_file))
             ckpt = torch.load(cached_file)
             if backbone_name.startswith('densenet'):
                 ckpt = _load_densenet_dict(ckpt)
             backbone_dict = backbone.state_dict()
             matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
-            logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+            if is_main_process():
+                logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+                logger.info('Loaded!')
             backbone.load_state_dict(matched_weights, strict=False)
-            logger.info('Loaded!')
         else:
-            logger.info("Load backbone pretrained model from url {}".format(model_urls[backbone_name]))
+            if is_main_process():
+                logger.info("Load backbone pretrained model from url {}".format(model_urls[backbone_name]))
             try:
                 ckpt = load_url(model_urls[backbone_name])
                 if backbone_name.startswith('densenet'):
                     ckpt = _load_densenet_dict(ckpt)
                 backbone_dict = backbone.state_dict()
                 matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
-                logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+                if is_main_process():
+                    logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+                    logger.info('Loaded!')
                 backbone.load_state_dict(matched_weights, strict=False)
-                logger.info('Loaded!')
             except Exception as e:
-                logger.info(e)
-                logger.info("Use torch download pretrained model failed!")
+                if is_main_process():
+                    logger.info(e)
+                    logger.info("Use torch download pretrained model failed!")
     else:
-        logger.info("{} has no pretrained model and use kaiming_normal init...".format(backbone_name))
+        if is_main_process():
+            logger.info("{} has no pretrained model and use kaiming_normal init...".format(backbone_name))
     return backbone
 
 

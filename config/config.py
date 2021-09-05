@@ -26,12 +26,6 @@ _C.DATA.MEAN = [0.485, 0.456, 0.406]
 _C.DATA.STD = [0.229, 0.224, 0.225]
 
 # ---------------------------------------------------------------------------- #
-# DISTRIBUTED options
-# ---------------------------------------------------------------------------- #
-_C.DISTRIBUTED = CN()
-_C.DISTRIBUTED.LOCAL_RANK = 0  # default value
-
-# ---------------------------------------------------------------------------- #
 # TRAIN options
 # ---------------------------------------------------------------------------- #
 _C.TRAIN = CN()
@@ -81,6 +75,7 @@ _C.MODEL.NORM_LAYER = 'bn'  # bn or syncbn
 _C.MODEL.OUTPUT_STRIDE = 8  # 8, 16, 32
 _C.MODEL.HEAD7X7 = False  # only for resnet backbone
 _C.MODEL.PHASE = 'train'  # if test mode, RESUME and FINETUNE must be False
+_C.MODEL.TRAINED = False  # load trained semantic segmentation model weight
 _C.MODEL.RESUME = False
 _C.MODEL.FINETUNE = False
 _C.MODEL.NAME = 'psp'
@@ -218,7 +213,7 @@ _C.GPU_IDS = u'0,1,2,3,4,5,6,7'
 _C.SEED = 1024
 
 # Directory for saving checkpoints and loggers
-_C.CKPT = '../ckpts/ade20k/ade20k_psp'
+_C.CKPT = './ckpts/ade20k/ade20k_psp'
 
 
 def merge_cfg_from_file(file):
