@@ -17,7 +17,10 @@ cfg = _C
 # DATA options
 # ---------------------------------------------------------------------------- #
 _C.DATA = CN()
+
+# supported cityscapes, ade20k, voc(07+12), voc_aug, camvid, kitti, mscoco, lip, mapillary
 _C.DATA.DATASET = 'ade20k'
+
 _C.DATA.TRAIN_JSON = ""
 _C.DATA.VAL_JSON = ""
 _C.DATA.TEST_JSON = ""
