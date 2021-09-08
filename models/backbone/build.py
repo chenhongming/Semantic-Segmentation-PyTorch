@@ -55,61 +55,52 @@ model_urls = {
 def set_backbone():
     backbone_name = cfg.MODEL.BACKBONE_NAME
     backbone = BACKBONE_REGISTRY.get(backbone_name)()
-    if cfg.MODEL.BACKBONE_PRETRAINED:
+    if cfg.MODEL.BACKBONE_PRETRAINED and is_main_process():
         backbone = load_pretrain_backbone(backbone, backbone_name)
     return backbone
 
 
 def load_pretrain_backbone(backbone, backbone_name):
     pretrained_file = root_path() + cfg.MODEL.BACKBONE_WEIGHT
-
     if os.path.isfile(pretrained_file) and os.path.splitext(pretrained_file)[-1] == '.pth':
-        if is_main_process():
-            logger.info("Load backbone pretrained model from {}".format(cfg.MODEL.BACKBONE_WEIGHT))
+        logger.info("Load backbone pretrained model from {}".format(cfg.MODEL.BACKBONE_WEIGHT))
         ckpt = torch.load(pretrained_file)
         if backbone_name.startswith('densenet'):
             ckpt = _load_densenet_dict(ckpt)
         backbone_dict = backbone.state_dict()
         matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
-        if is_main_process():
-            logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
-            logger.info('Loaded!')
+        logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+        logger.info('Loaded!')
         backbone.load_state_dict(matched_weights, strict=False)
     elif backbone_name in model_urls:
         # default download path using torch.hub import load_state_dict_from_url method
         cached_file = os.path.expanduser("~/.cache/torch/hub/checkpoints/" + model_urls[backbone_name].split('/')[-1])
         if os.path.isfile(cached_file) and os.path.splitext(cached_file)[-1] == '.pth':
-            if is_main_process():
-                logger.info("Load backbone pretrained model from {}".format(cached_file))
+            logger.info("Load backbone pretrained model from {}".format(cached_file))
             ckpt = torch.load(cached_file)
             if backbone_name.startswith('densenet'):
                 ckpt = _load_densenet_dict(ckpt)
             backbone_dict = backbone.state_dict()
             matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
-            if is_main_process():
-                logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
-                logger.info('Loaded!')
+            logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+            logger.info('Loaded!')
             backbone.load_state_dict(matched_weights, strict=False)
         else:
-            if is_main_process():
-                logger.info("Load backbone pretrained model from url {}".format(model_urls[backbone_name]))
+            logger.info("Load backbone pretrained model from url {}".format(model_urls[backbone_name]))
             try:
                 ckpt = load_url(model_urls[backbone_name])
                 if backbone_name.startswith('densenet'):
                     ckpt = _load_densenet_dict(ckpt)
                 backbone_dict = backbone.state_dict()
                 matched_weights, unmatched_weights = weight_filler(ckpt, backbone_dict)
-                if is_main_process():
-                    logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
-                    logger.info('Loaded!')
+                logger.info("Unmatched backbone layers: {}".format(unmatched_weights))
+                logger.info('Loaded!')
                 backbone.load_state_dict(matched_weights, strict=False)
             except Exception as e:
-                if is_main_process():
-                    logger.info(e)
-                    logger.info("Use torch download pretrained model failed!")
+                logger.info(e)
+                logger.info("Use torch download pretrained model failed!")
     else:
-        if is_main_process():
-            logger.info("{} has no pretrained model and use kaiming_normal init...".format(backbone_name))
+        logger.info("{} has no pretrained model and use kaiming_normal init...".format(backbone_name))
     return backbone
 
 

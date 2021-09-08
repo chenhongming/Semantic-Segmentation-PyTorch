@@ -115,14 +115,13 @@ def main():
 
     # Setup Resume
     if cfg.MODEL.RESUME:
-        ckpt_state = load_resume_state()
-        cfg.TRAIN.START_EPOCH = ckpt_state['epoch']
         if is_main_process():
+            ckpt_state = load_resume_state()
+            cfg.TRAIN.START_EPOCH = ckpt_state['epoch']
             logger.info('resume train from epoch: {}'.format(cfg.TRAIN.START_EPOCH))
-        if ckpt_state['optimizer'] is not None and ckpt_state['lr_scheduler'] is not None:
-            optimizer.load_state_dict(ckpt_state['optimizer'])
-            lr_scheduler.load_state_dict(ckpt_state['lr_scheduler'])
-            if is_main_process():
+            if ckpt_state['optimizer'] is not None and ckpt_state['lr_scheduler'] is not None:
+                optimizer.load_state_dict(ckpt_state['optimizer'])
+                lr_scheduler.load_state_dict(ckpt_state['lr_scheduler'])
                 logger.info('resume optimizer and lr scheduler from resume state...')
 
     # Setup Output dir
