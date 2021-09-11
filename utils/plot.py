@@ -25,6 +25,7 @@ class Writer:
         with open(self.log_file, 'r') as f:
             lines = f.readlines()
             for line in lines:
+                # exclude first line
                 if line.startswith('E'):
                     continue
                 train_loss.append(float(line.strip().split('\t\t')[1]))

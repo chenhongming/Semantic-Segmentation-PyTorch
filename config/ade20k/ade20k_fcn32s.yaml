@@ -8,7 +8,6 @@ MODEL:
   BACKBONE_NAME: 'vgg11'
   BACKBONE_PRETRAINED: True
   BACKBONE_WEIGHT: "pretrained/"
-  NORM_LAYER: 'bn'
   PHASE: 'train'
   RESUME: False
   FINETUNE: False

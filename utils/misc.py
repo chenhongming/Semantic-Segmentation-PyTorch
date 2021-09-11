@@ -1,5 +1,6 @@
 import os
 import torch
+import platform
 from thop import profile, clever_format
 
 from config.config import cfg
@@ -30,3 +31,19 @@ def params_flops(net, size, device):
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
+
+
+def device_info(device):
+    # device = 'cpu' or 'cuda'
+    info = 'torch: {} ||'.format(torch.__version__) + ' python: {} ||'.format(platform.python_version())
+    if device == 'cuda':
+        p = torch.cuda.get_device_properties(0)
+        info += ' device: GPU ||'
+        msg = '\t\t({}) [memory: {}'.format(p.name, p.total_memory / 1024 ** 2) + ' MB]'
+    else:
+        info += ' device: CPU ||'
+    logger.info('*' * 48)
+    logger.info(info)
+    if device == 'cuda':
+        logger.info(msg)
+    logger.info('*' * 48)

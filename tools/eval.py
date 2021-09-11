@@ -10,6 +10,7 @@ from config.config import cfg, merge_cfg_from_file, merge_cfg_from_list, logger_
 from dataset import dataset
 from models.backbone.build import load_trained_model
 from models.model_zone import generate_model
+from utils.misc import device_info
 from utils.utils import setup_logger, AverageMeter
 from utils.metrics import accuracy, intersectionAndUnion
 
@@ -40,6 +41,7 @@ def main():
     else:
         logger.info("Using CPU training!!!")
         device = 'cpu'
+    device_info(device)
 
     # Setup input_transform and augmentations
     input_transform = transforms.Compose([

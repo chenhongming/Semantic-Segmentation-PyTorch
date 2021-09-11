@@ -4,13 +4,13 @@ DATA:
   CLASSES: 151
 
 TRAIN:
-  BATCH_SIZE: 32
+  BATCH_SIZE: 2
   SAVE_EPOCH: 10
 
 TEST:
   MODE: 'video'
   IMAGE_PATH: "../data/test/"
-  VIDEO_PATH: "/Users/chenhongming/Downloads/1630030519385084.mp4"
+  VIDEO_PATH: ""
 
 MODEL:
   PHASE: 'train'
@@ -21,7 +21,7 @@ MODEL:
   NORM_LAYER: 'bn'
   RESUME: False
   FINETUNE: False
-  MODEL_WEIGHT: "ckpts/ade20k/ade20k_psp/psp_shufflenet_v2_x0_5_ade20k_Eopoch_2_model.pth"
+  MODEL_WEIGHT: ""
   OUTPUT_STRIDE: 8
 
 PPM:

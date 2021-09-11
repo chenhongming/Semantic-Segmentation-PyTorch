@@ -11,7 +11,7 @@ from models.model_zone import generate_model
 from models.backbone.build import load_trained_model
 from utils.utils import setup_logger
 from utils.color_map import set_colors
-from utils.misc import check_mkdir
+from utils.misc import check_mkdir, device_info
 from utils.visualization import vis
 
 
@@ -41,6 +41,7 @@ def demo():
     else:
         logger.info("Using CPU training!!!")
         device = 'cpu'
+    device_info(device)
 
     # Setup input_transform and augmentations
     input_transform = transforms.Compose([

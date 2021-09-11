@@ -18,9 +18,10 @@ cfg = _C
 # ---------------------------------------------------------------------------- #
 _C.DATA = CN()
 
-# supported cityscapes, ade20k, voc(07+12), voc_aug, camvid, kitti, mscoco, lip, mapillary
+# supported cityscapes, ade20k, voc, voc_aug,
+# camvid, kitti, mscoco, lip, mapillary
 _C.DATA.DATASET = 'ade20k'
-
+# index file of the data set
 _C.DATA.TRAIN_JSON = ""
 _C.DATA.VAL_JSON = ""
 _C.DATA.TEST_JSON = ""
@@ -32,7 +33,7 @@ _C.DATA.STD = [0.229, 0.224, 0.225]
 # TRAIN options
 # ---------------------------------------------------------------------------- #
 _C.TRAIN = CN()
-_C.TRAIN.AUGMENTATIONS = ['RandomFlip', 'RandomResize', 'RandomCrop', 'RandomRotate']
+# BATCH_SIZE for per GPU
 _C.TRAIN.BATCH_SIZE = 8
 # Probability of using RandomFlip
 _C.TRAIN.PROB = 0.5
@@ -40,12 +41,14 @@ _C.TRAIN.PROB = 0.5
 _C.TRAIN.RATIO = (0.5, 2)
 # crop_size of using RandomCrop
 # int: a square crop (crop_size, crop_size) is made
-# list: [640, 512]
+# tuple: (640, 512)
 _C.TRAIN.CROP_SIZE = 512
+_C.TRAIN.CROP_SIZE = (640, 512)
 # params of using RandomRotate: PADDING for img, IGNORE_LABEL for mask
 _C.TRAIN.ROTATE = (-10, 10)
 _C.TRAIN.PADDING = (0, 0, 0)
 _C.TRAIN.IGNORE_LABEL = 255
+
 _C.TRAIN.START_EPOCH = 1
 _C.TRAIN.MAX_EPOCH = 100
 _C.TRAIN.SAVE_EPOCH = 2
@@ -56,6 +59,7 @@ _C.TRAIN.SAVE_EPOCH = 2
 _C.EVAL = CN()
 _C.EVAL.BATCH_SIZE = 2
 _C.EVAL.CROP_SIZE = [640, 512]
+# params of using RandomRotate: PADDING for img, IGNORE_LABEL for mask
 _C.EVAL.PADDING = (0, 0, 0)
 _C.EVAL.IGNORE_LABEL = 255
 
@@ -63,31 +67,62 @@ _C.EVAL.IGNORE_LABEL = 255
 # EVAL options
 # ---------------------------------------------------------------------------- #
 _C.TEST = CN()
-_C.TEST.MODE = 'image'  # method: image or video
+# method: image or video
+_C.TEST.MODE = 'image'
 _C.TEST.IMAGE_PATH = ""
-_C.TEST.VIDEO_PATH = ""   # "": realtime camera; "path": local video
+# "": realtime camera; "path": local video
+_C.TEST.VIDEO_PATH = ""
 
 # ---------------------------------------------------------------------------- #
 # Model options
 # ---------------------------------------------------------------------------- #
 _C.MODEL = CN()
+# supported vgg11 vgg11_bn vgg13 vgg13_bn vgg16 vgg16_bn vgg19 vgg19_bn
+# resnet18 resnet34 resnet50 resnet101 resnet152
+# resnext50_32x4d resnext101_32x8d wide_resnet50_2 wide_resnet101_2
+# densenet121 densenet161 densenet169 densenet201
+# mobilenet_v1 mobilenet_v2 mobilenet_v3_small mobilenet_v3_large
+# shufflenet_v1_g1 shufflenet_v1_g2 shufflenet_v1_g4 shufflenet_v1_g8
+# shufflenet_v2_x0_5 shufflenet_v2_x1_0 shufflenet_v2_x1_5 shufflenet_v2_x2_0
+# mnasnet0_5 mnasnet0_75 mnasnet1_0 mnasnet1_3
 _C.MODEL.BACKBONE_NAME = 'resnet18'
 _C.MODEL.BACKBONE_PRETRAINED = True
 _C.MODEL.BACKBONE_WEIGHT = "pretrained/"
-_C.MODEL.NORM_LAYER = 'bn'  # bn or syncbn
+# bn or syncbn
+# NOTE: The value(NORM_LAYER) does not need to be modified.
+# The syncbn method is implemented by
+#   model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+_C.MODEL.NORM_LAYER = 'bn'
+# downsampling rate for image (i.e. 8x)
 _C.MODEL.OUTPUT_STRIDE = 8  # 8, 16, 32
-_C.MODEL.HEAD7X7 = False  # only for resnet backbone
-_C.MODEL.PHASE = 'train'  # if test mode, RESUME and FINETUNE must be False
-_C.MODEL.TRAINED = False  # load trained semantic segmentation model weight
+# only for resnet backbone
+# This parameter determines whether to use 3 3X3 convolutions
+# instead of 7X7 convolutions.
+_C.MODEL.HEAD7X7 = False
+# if test mode, RESUME and FINETUNE must be False
+_C.MODEL.PHASE = 'train'
+# load trained semantic segmentation model weight
+_C.MODEL.TRAINED = False
+# In the training process, if the training is interrupted,
+# this parameter can continue to train without training from the scratch.
 _C.MODEL.RESUME = False
+# This parameter is used to finetune the segmentation model trained on
+# the public semantic segmentation dataset to the actual priv dataset.
 _C.MODEL.FINETUNE = False
+# supported fcn32s fcn16s fcn8s deeplabv3 deeplabv3plus
+# lraspp denseaspp psp bisenet contextnet
 _C.MODEL.NAME = 'psp'
+# Used to store the segmentation model path after training
 _C.MODEL.MODEL_WEIGHT = ""
-_C.MODEL.MULTIPLIER = 1.0  # for mobilenetv1-v2 shufflenetv1-v2 backbone
-_C.MODEL.DROP_RATE = 0.1  # for densenet
-_C.MODEL.USE_AUX = True  # c3 must be not None if USE_AUX is True. See segmentation model define
+# for mobilenetv1-v2 shufflenetv1-v2 backbone
+_C.MODEL.MULTIPLIER = 1.0
+# for densenet
+_C.MODEL.DROP_RATE = 0.1
+# c3 must be not None if USE_AUX is True. See segmentation model define
+_C.MODEL.USE_AUX = True
 _C.MODEL.AUX_LOSS_WEIGHT = 0.4
-_C.MODEL.AUX2_LOSS_WEIGHT = 0.4  # for bisenet
+# for bisenet
+_C.MODEL.AUX2_LOSS_WEIGHT = 0.4
 
 # ---------------------------------------------------------------------------- #
 # PSP(PPM) options
@@ -120,7 +155,8 @@ _C.ASPP.DROPOUT = 0.5
 # ---------------------------------------------------------------------------- #
 _C.DEEPLABV3PLUS = CN()
 _C.DEEPLABV3PLUS.LOW_LEVEL_FEATURE_CHANNELS = 48  # 48 or 32
-_C.DEEPLABV3PLUS.OUTPUT_STRIDE = 16  # only 16 for deeplabv3plus (unused)
+# only 16 for deeplabv3plus
+_C.DEEPLABV3PLUS.OUTPUT_STRIDE = 16
 _C.DEEPLABV3PLUS.DROPOUT = 0.1
 
 # ---------------------------------------------------------------------------- #
@@ -164,14 +200,18 @@ _C.ContextNet.OUT_CHANNELS = 128
 # SOLVER options
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
-_C.SOLVER.LOSS_NAME = ''
+_C.SOLVER.LOSS_NAME = ''  # only CrossEntropyLoss
+# Used to solve the problem of category imbalance
 _C.SOLVER.LOSS_WEIGHT = []
+# Category not used to calculate loss
 _C.SOLVER.IGNORE_LABEL = 255
+# sgd adam asgd adamax adadelta adagrad rmsprop
 _C.SOLVER.OPTIMIZER_NAME = 'sgd'
 _C.SOLVER.LR = 0.02
 _C.SOLVER.MOMENTUM = 0.99
 _C.SOLVER.WEIGHT_DECAY = 4e-5
-_C.SOLVER.EPS = 1e-8  # Adadelta: 1e-6; Adam,Adamax,RMSprop: 1e-8; Adagrad: 1e-10
+# Adadelta: 1e-6; Adam,Adamax,RMSprop: 1e-8; Adagrad: 1e-10
+_C.SOLVER.EPS = 1e-8
 _C.SOLVER.BETAS = (0.9, 0.999)  # for Adam, Adamax
 _C.SOLVER.AMSGRAD = False  # for Adam
 _C.SOLVER.LAMBD = 1e-4  # for ASGD

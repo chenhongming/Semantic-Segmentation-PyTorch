@@ -9,7 +9,6 @@ MODEL:
   PHASE: 'train'
   NAME: 'contextnet' # no backbone
   BACKBONE_NAME: None
-  NORM_LAYER: 'bn'
   RESUME: False
   FINETUNE: False
   MODEL_WEIGHT: "ckpts/ade20k/model.pth"

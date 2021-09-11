@@ -19,7 +19,7 @@ from solver.scheduler import set_scheduler
 from utils.utils import setup_logger, setup_seed, AverageMeter
 from utils.plot import Writer
 from utils.save import save_checkpoint
-from utils.misc import check_mkdir, params_flops, get_lr
+from utils.misc import check_mkdir, params_flops, get_lr, device_info
 from utils.distributed import reduce_tensor, is_main_process
 logger = setup_logger('main-logger')
 
@@ -63,6 +63,8 @@ def main():
     else:
         logger.info("Using CPU training!!!")
         device = 'cpu'
+    if is_main_process():
+        device_info(device)
 
     # Setup Random Seed
     setup_seed(cfg.SEED)

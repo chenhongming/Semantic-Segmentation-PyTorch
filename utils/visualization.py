@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 
 
+# visualization predict result to BGR image
 def vis(pred, image, color_map):
     pred = pred.astype('int')
     assert pred.shape[0] == image.shape[0], "pred.shape[0]: {} image.shape[0]: {}" .format(pred.shape[0], image.shape[0])

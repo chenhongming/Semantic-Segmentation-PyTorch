@@ -216,6 +216,7 @@ class GenerateJson:
 
     @DATASET_REGISTRY.register()
     # used to generate priv dataset
+    # default image==> .jpg mask==> .png
     def priv2json(self, json_path="/priv/"):
         assert self.split in ('train', 'val', 'test')
         if self.split == 'test':
