@@ -28,4 +28,4 @@ PPM:
   POOL_SCALES: (1, 2, 3, 6)
 
 GPU_USE: True
-GPU_IDS: u'0,1'
+GPU_ID: u'0'

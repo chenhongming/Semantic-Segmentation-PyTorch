@@ -42,24 +42,24 @@ def main():
 
     # Setup Device
     is_distributed = False
-    if torch.cuda.is_available() and cfg.GPU_USE:
+    if cfg.GPU_USE:
         # Set temporary environment variables
-        if torch.cuda.device_count() == 1:
-            logger.info("Using GPU training!!!")
-            logger.info("GPU ID: 0")
-            os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-            device = "cuda"
+        if not os.environ.get('CUDA_VISIBLE_DEVICES'):
+            os.environ["CUDA_VISIBLE_DEVICES"] = cfg.GPU_ID
+            if torch.cuda.is_available():
+                logger.info("Using Single GPU training!!!")
+                logger.info("VISIBLE DEVICES (GPU) ID: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
+                device = "cuda"
         else:
-            is_distributed = True
-            # init distributed training mode
-            dist.init_process_group(backend="nccl", init_method="env://")
-            torch.cuda.set_device(args.local_rank)
-            dist.barrier()
-            if is_main_process():
-                logger.info("Using GPU training!!!")
-                logger.info("GPU ID: {}".format(cfg.GPU_IDS))
-            os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(str(x) for x in cfg.GPU_IDS)
-            device = "cuda"
+            if torch.cuda.is_available():
+                is_distributed = True
+                # init distributed training mode
+                dist.init_process_group(backend="nccl", init_method="env://")
+                torch.cuda.set_device(args.local_rank)
+                dist.barrier()
+                if is_main_process():
+                    logger.info("Using Multi GPU training!!!")
+                device = "cuda"
     else:
         logger.info("Using CPU training!!!")
         device = 'cpu'
@@ -134,8 +134,7 @@ def main():
             shutil.copyfile(args.cfg_file, os.path.join(cfg.CKPT, args.cfg_file.split('/')[-1]))
 
     # Setup Draw curve
-    if is_main_process():
-        writer = Writer(cfg.CKPT)
+    writer = Writer(cfg.CKPT)
 
     # main loop
     if is_main_process():
@@ -145,10 +144,10 @@ def main():
         lr_scheduler.step()
         if is_distributed:
             train_sampler.set_epoch(epoch)
-        if is_main_process:
+        if is_main_process():
             writer.append([epoch, train_loss])
             writer.draw_curve(cfg.MODEL.NAME)
-            if epoch % cfg.TRAIN.SAVE_EPOCH == 0 and dist.get_rank() == 0:
+            if epoch % cfg.TRAIN.SAVE_EPOCH == 0:
                 save_checkpoint(cfg.CKPT, epoch, model, optimizer, lr_scheduler)
 
 
@@ -157,7 +156,7 @@ def train(model, loader, criterion, optimizer, epoch, device, is_distributed):
     # switch to train model
     model.train()
     desc = f'Epoch {epoch}/{cfg.TRAIN.MAX_EPOCH}'
-    with tqdm(total=len(loader), desc=desc) as pbar:
+    with tqdm(total=len(loader), desc=desc, leave=False) as pbar:
         for index, (images, masks) in enumerate(loader):
             # load data to device
             images = images.to(device)

@@ -14,8 +14,8 @@ def time_stamp():
 def save_checkpoint(save_path, epoch, model, optimizer=None, lr_scheduler=None):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    filename = os.path.join(save_path, '{}_{}_{}_Eopoch_{}_model.pth'.format(cfg.MODEL.NAME, cfg.MODEL.BACKBONE_NAME,
-                                                                             cfg.DATA.DATASET, epoch))
+    filename = os.path.join(save_path, '{}_{}_{}_Epoch_{}_model.pth'.format(cfg.MODEL.NAME, cfg.MODEL.BACKBONE_NAME,
+                                                                            cfg.DATA.DATASET, epoch))
     model_state_dict = model.module.state_dict() if hasattr(model, 'module') else model.state_dict()
     save_state = {
         'epoch': epoch,
@@ -26,3 +26,4 @@ def save_checkpoint(save_path, epoch, model, optimizer=None, lr_scheduler=None):
 
     torch.save(save_state, filename)
     logger.info('Epoch {} model saved in: {}'.format(epoch, filename))
+

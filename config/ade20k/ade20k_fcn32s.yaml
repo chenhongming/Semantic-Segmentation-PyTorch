@@ -19,4 +19,4 @@ FCN:
   DROP_OUT: 0.1
 
 GPU_USE: True
-GPU_IDS: u'0,1'
+GPU_ID: u'0'

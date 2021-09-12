@@ -249,8 +249,8 @@ _C.ROOT = "../data/"
 # Use GPU for training or testing if True
 _C.GPU_USE = True
 
-# Specify using GPU ids
-_C.GPU_IDS = u'0,1,2,3,4,5,6,7'
+# Specify using GPU id for Single GPU training
+_C.GPU_ID = u'0'
 
 # random seed
 _C.SEED = 1024

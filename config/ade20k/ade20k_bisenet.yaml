@@ -18,4 +18,4 @@ MODEL:
   OUTPUT_STRIDE: 32
 
 GPU_USE: True
-GPU_IDS: u'0,1'
+GPU_IDS: u'0'
