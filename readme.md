@@ -134,7 +134,7 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
   *NOTE:* `nproc_per_node=4` means using 4 GPUs.
   ```
-   python3 -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg ./config/ade20k/ade20k_psp.yaml 
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg ./config/ade20k/ade20k_psp.yaml 
    ```
    
    ### 4. Eval
