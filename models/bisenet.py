@@ -70,13 +70,15 @@ class BiSeNet(nn.Module):
         ffm_out = self.ffm([spatial_out, context_out])
         out = self.head(ffm_out)
 
-        if self.aux:
+        if self.aux and cfg.MODEL.PHASE == 'train':
             auxout1 = self.auxlayer1(context_auxout[0])
             auxout2 = self.auxlayer2(context_auxout[1])
             auxout1 = F.interpolate(auxout1, size=out_size, mode='bilinear', align_corners=True)
             auxout2 = F.interpolate(auxout2, size=out_size, mode='bilinear', align_corners=True)
             return out, auxout1, auxout2
-        if cfg.MODEL.PHASE == 'test':
+        elif cfg.MODEL.PHASE == 'val':
+            out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
+        elif cfg.MODEL.PHASE == 'test':
             out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 

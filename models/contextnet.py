@@ -72,11 +72,13 @@ class ContextNet(nn.Module):
         x = self.deep_net(F.interpolate(x, size=size, mode='bilinear', align_corners=True))
         out = self.feature_fusion_module([s, x])
         out = self.output(out)
-        if self.aux:
+        if self.aux and cfg.MODEL.PHASE == 'train':
             auxout = self.auxlayer(x)
             auxout = F.interpolate(auxout, size=out_size, mode='bilinear', align_corners=True)
             return out, auxout
-        if cfg.MODEL.PHASE == 'test':
+        elif cfg.MODEL.PHASE == 'val':
+            out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
+        elif cfg.MODEL.PHASE == 'test':
             out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 

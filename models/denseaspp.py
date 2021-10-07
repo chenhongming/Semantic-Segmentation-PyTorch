@@ -64,7 +64,9 @@ class DenseASPP(nn.Module):
             aux_out = self.output(aux_out)
             aux_out = F.interpolate(aux_out, size=out_size, mode='bilinear', align_corners=True)
             return out, aux_out
-        if cfg.MODEL.PHASE == 'test':
+        elif cfg.MODEL.PHASE == 'val':
+            out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
+        elif cfg.MODEL.PHASE == 'test':
             out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 
