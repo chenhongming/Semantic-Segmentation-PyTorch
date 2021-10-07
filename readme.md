@@ -127,14 +127,14 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    
    * Single GPU or CPU 
    ```
-   python3 tools/train.py --cfg ./config/ade20k/ade20k_psp.yaml 
+   python3 train.py --cfg ../config/ade20k/ade20k_psp.yaml 
    ```
   
    * Multi GPU
 
   *NOTE:* `nproc_per_node=4` means using 4 GPUs.
   ```
-   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 -m torch.distributed.launch --nproc_per_node=4 tools/train.py --cfg ./config/ade20k/ade20k_psp.yaml 
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 -m torch.distributed.launch --nproc_per_node=4 train.py --cfg ../config/ade20k/ade20k_psp.yaml 
    ```
    
    ### 4. Eval
@@ -145,7 +145,7 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    
   * Single GPU or CPU 
    ```
-   python3 tools/eval.py --cfg ./config/ade20k/ade20k_psp.yaml 
+   python3 eval.py --cfg ../config/ade20k/ade20k_psp.yaml 
    ```
    
    ### 5. Test
@@ -156,7 +156,7 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    
    * Single GPU or CPU 
    ```
-   python3 tools/test.py --cfg ./config/ade20k/ade20k_psp.yaml 
+   python3 test.py --cfg ../config/ade20k/ade20k_psp.yaml 
    ```
    
    ### 6. Reference 
