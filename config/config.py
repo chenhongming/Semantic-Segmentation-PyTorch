@@ -256,7 +256,7 @@ _C.GPU_ID = u'0'
 _C.SEED = 1024
 
 # Directory for saving checkpoints and loggers
-_C.CKPT = './ckpts/ade20k/ade20k_psp'
+_C.CKPT = '../ckpts/ade20k/ade20k_psp'
 
 
 def merge_cfg_from_file(file):
