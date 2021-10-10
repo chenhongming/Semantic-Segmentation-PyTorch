@@ -1,31 +1,31 @@
 DATA:
   TRAIN_JSON: ADEChallengeData2016/train.json
-  VAL_JSON: ADEChallengeData2016/val.json
+  VAL_JSON: ADEChallengeData2016/val_.json
   CLASSES: 151
 
 TRAIN:
   BATCH_SIZE: 8
-  SAVE_EPOCH: 10
+  SAVE_EPOCH: 5
 
 TEST:
-  MODE: 'video'
-  IMAGE_PATH: "../data/test/"
+  MODE: 'image'
+  IMAGE_PATH: "../data/ADEChallengeData2016/images/validation/"
   VIDEO_PATH: ""
 
 MODEL:
-  PHASE: 'train'
+  PHASE: 'test'
   NAME: 'psp'
   BACKBONE_NAME: 'mobilenet_v2'
-  BACKBONE_PRETRAINED: True
+  BACKBONE_PRETRAINED: False
   BACKBONE_WEIGHT: "pretrained/"
   NORM_LAYER: 'bn'
   RESUME: False
   FINETUNE: False
-  MODEL_WEIGHT: ""
+  MODEL_WEIGHT: "ckpts/ade20k/ade20k_psp/psp_mobilenet_v2_ade20k_Epoch_5_model.pth"
   OUTPUT_STRIDE: 8
 
 SOLVER:
-  SCHEDULER_NAME: 'multistep'
+  SCHEDULER_NAME: 'step'
 
 PPM:
   POOL_SCALES: (1, 2, 3, 6)

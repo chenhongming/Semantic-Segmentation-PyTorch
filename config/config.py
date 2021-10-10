@@ -57,7 +57,7 @@ _C.TRAIN.SAVE_EPOCH = 2
 # EVAL options
 # ---------------------------------------------------------------------------- #
 _C.EVAL = CN()
-_C.EVAL.BATCH_SIZE = 2
+_C.EVAL.BATCH_SIZE = 8
 _C.EVAL.CROP_SIZE = [640, 512]
 # params of using RandomRotate: PADDING for img, IGNORE_LABEL for mask
 _C.EVAL.PADDING = (0, 0, 0)

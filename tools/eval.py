@@ -109,12 +109,12 @@ def eval(model, loader, device, logger):
         intersection_meter.update(intersection)
         union_meter.update(union)
         tic = time.time()
-        logger.info('Evaluating: Iter_Size:{} | Mean_ACC: {:4.4f} % | Cur_ACC: {:4.4f} % | '
+        logger.info('Evaluating: Iter:{}/{} | Mean_ACC: {:4.4f} % | Cur_ACC: {:4.4f} % | '
                     'Data_Time_Avg: {:.3f} s | Infer_Time_Avg: {:.3f} s'
-                    .format(len(loader), acc_meter.avg * 100., acc * 100., data_time.avg, infer_time.avg))
+                    .format(index, len(loader), acc_meter.avg * 100., acc * 100., data_time.avg, infer_time.avg))
     iou = intersection_meter.sum / (union_meter.sum + 1e-10)
     for i, _iou in enumerate(iou):
-        logger.info('class [{}], IoU: {}'.format(i+1, _iou))
+        logger.info('class [{}], IoU: {:.4}'.format(i+1, _iou))
     logger.info('[Eval Summary]: Mean IoU: {:.4}, Accuracy: {:.2f}%'.format(iou.mean(), acc_meter.avg * 100.))
 
 
