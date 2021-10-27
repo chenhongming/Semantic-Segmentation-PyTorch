@@ -27,10 +27,10 @@ class DeepLabV3(nn.Module):
         super().__init__()
 
         self.classes = cfg.DATA.CLASSES
-        self.zoom_factor = cfg.MODEL.ZOOM_FACTOR
         self.output_stride = cfg.MODEL.OUTPUT_STRIDE
         self.out_channels = cfg.ASPP.OUT_CHANNELS  # default 512
         self.dropout = cfg.ASPP.DROPOUT
+        self.norm_layer = set_norm(cfg.MODEL.NORM_LAYER)
 
         if cfg.MODEL.BACKBONE_NAME.startswith('vgg'):
             raise Exception("Not supported bankbone!")

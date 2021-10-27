@@ -50,6 +50,8 @@ def main():
                 logger.info("Using Single GPU training!!!")
                 logger.info("VISIBLE DEVICES (GPU) ID: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
                 device = "cuda"
+            else:
+                device = 'cpu'
         else:
             if torch.cuda.is_available():
                 is_distributed = True
@@ -60,6 +62,8 @@ def main():
                 if is_main_process():
                     logger.info("Using Multi GPU training!!!")
                 device = "cuda"
+            else:
+                device = 'cpu'
     else:
         logger.info("Using CPU training!!!")
         device = 'cpu'
