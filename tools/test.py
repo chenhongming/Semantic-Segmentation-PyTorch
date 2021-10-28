@@ -51,7 +51,7 @@ def demo():
 
     # Setup Model(load trained model weights)
     model = generate_model()
-    model = load_trained_model(model)
+    model = load_trained_model(model, device)
     model.to(device).eval()
 
     # Setup result dir

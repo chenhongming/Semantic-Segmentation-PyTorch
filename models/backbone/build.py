@@ -136,11 +136,11 @@ def _load_densenet_dict(state_dict):
     return state_dict
 
 
-def load_trained_model(model):
+def load_trained_model(model, device):
     model_file = root_path() + cfg.MODEL.MODEL_WEIGHT
     suffix = os.path.splitext(model_file)[-1]
     if os.path.isfile(model_file) and suffix == '.pth':
-        ckpt = torch.load(model_file)['state_dict']
+        ckpt = torch.load(model_file, map_location=torch.device(device))['state_dict']
         model_dict = model.state_dict()
         matched_weights, unmatched_weights = weight_filler(ckpt, model_dict)
         logger.info("Unmatched model layers: {}".format(unmatched_weights))

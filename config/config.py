@@ -26,8 +26,8 @@ _C.DATA.TRAIN_JSON = ""
 _C.DATA.VAL_JSON = ""
 _C.DATA.TEST_JSON = ""
 _C.DATA.CLASSES = 151
-_C.DATA.MEAN = [0.485, 0.456, 0.406]
-_C.DATA.STD = [0.229, 0.224, 0.225]
+_C.DATA.MEAN = [103.52, 116.28, 123.675]
+_C.DATA.STD = [57.375, 57.12, 58.395]
 
 # ---------------------------------------------------------------------------- #
 # TRAIN options

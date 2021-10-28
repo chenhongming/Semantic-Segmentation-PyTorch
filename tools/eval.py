@@ -65,7 +65,7 @@ def main():
     logger.info("Evaluating model:\n\033[1;34m{} \033[0m".format(model))
 
     # load trained model weights
-    model = load_trained_model(model)
+    model = load_trained_model(model, device)
 
     # main loop
     logger.info("\n\t\t\t>>>>> Start Evaluating >>>>>")
