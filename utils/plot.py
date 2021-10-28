@@ -32,7 +32,6 @@ class Writer:
 
         plt.ylim(0, math.ceil(float(train_loss[0])))
         x = [i for i in range(1, len(lines))]
-        plt.xticks(x)
         plt.xlabel('epochs')
         plt.ylabel('train ave loss')
 
