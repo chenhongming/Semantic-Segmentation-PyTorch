@@ -62,6 +62,7 @@ def set_backbone():
 
 def load_pretrain_backbone(backbone, backbone_name):
     pretrained_file = root_path() + cfg.MODEL.BACKBONE_WEIGHT
+
     if os.path.isfile(pretrained_file) and os.path.splitext(pretrained_file)[-1] == '.pth':
         logger.info("Load backbone pretrained model from {}".format(cfg.MODEL.BACKBONE_WEIGHT))
         ckpt = torch.load(pretrained_file)

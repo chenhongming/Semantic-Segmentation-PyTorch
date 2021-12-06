@@ -38,8 +38,9 @@ class RandomResize:
         w, h = img.size
         ow = int(w * random.uniform(self.ratio[0], self.ratio[1]))
         oh = int(1.0 * h * ow / w)
-        img = img.resize((ow, oh), Image.BILINEAR)
-        mask = mask.resize((ow, oh), Image.NEAREST)
+        if ow != w or oh != h:
+            img = img.resize((ow, oh), Image.BILINEAR)
+            mask = mask.resize((ow, oh), Image.NEAREST)
         return img, mask
 
 
@@ -76,8 +77,9 @@ class RandomRotate:
         assert img.size == mask.size
         assert len(self.rotate) == 2 and len(self.padding) == 3
         rotate_degree = random.randint(self.rotate[0], self.rotate[1])
-        img = F.affine(img, angle=rotate_degree, interpolation=F.InterpolationMode.BILINEAR, fill=self.padding,
-                       translate=(0, 0), scale=1.0, shear=0.0)
-        mask = F.affine(mask, angle=rotate_degree, interpolation=F.InterpolationMode.NEAREST, fill=self.ignore_label,
-                        translate=(0, 0), scale=1.0, shear=0.0)
+        if rotate_degree != 0:
+            img = F.affine(img, angle=rotate_degree, interpolation=F.InterpolationMode.BILINEAR, fill=self.padding,
+                           translate=(0, 0), scale=1.0, shear=0.0)
+            mask = F.affine(mask, angle=rotate_degree, interpolation=F.InterpolationMode.NEAREST, fill=self.ignore_label,
+                            translate=(0, 0), scale=1.0, shear=0.0)
         return img, mask

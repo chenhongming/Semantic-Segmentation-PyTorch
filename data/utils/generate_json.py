@@ -63,15 +63,15 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def voc2json(self, json_path="/Pascal VOC/"):
+    def voc2json(self, json_path="/Pascal_VOC/"):
         assert self.split in ('train', 'val', 'trainval')
         year = ['VOC2007', 'VOC2012']
         for i in year:
-            target_file = self.root + "Pascal VOC/" + i + "/ImageSets/Segmentation/" + self.split + ".txt"
+            target_file = self.root + "Pascal_VOC/" + i + "/ImageSets/Segmentation/" + self.split + ".txt"
             list_sample = [x.rstrip() for x in open(target_file, 'r')]
             for item in list_sample:
-                image_path = self.root + "Pascal VOC/" + i + "/JPEGImages/" + item + ".jpg"
-                mask_path = self.root + "Pascal VOC/" + i + "/SegmentationClass/" + item + "_mask.png"
+                image_path = self.root + "Pascal_VOC/" + i + "/JPEGImages/" + item + ".jpg"
+                mask_path = self.root + "Pascal_VOC/" + i + "/SegmentationClass/" + item + "_mask.png"
                 if os.path.isfile(image_path) and os.path.isfile(mask_path):
                     self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
                 else:
@@ -80,13 +80,13 @@ class GenerateJson:
         self.write_json(self.check_pairs, self.root + json_path)
 
     @DATASET_REGISTRY.register()
-    def voc_aug2json(self, json_path="/Pascal VOC_aug/benchmark_RELEASE/dataset"):
+    def voc_aug2json(self, json_path="/Pascal_VOC_aug/benchmark_RELEASE/dataset"):
         assert self.split in ('train', 'val')
-        target_file = self.root + "Pascal VOC_aug/benchmark_RELEASE/dataset/" + self.split + ".txt"
+        target_file = self.root + "Pascal_VOC_aug/benchmark_RELEASE/dataset/" + self.split + ".txt"
         list_sample = [x.rstrip() for x in open(target_file, 'r')]
         for item in list_sample:
-            image_path = self.root + "Pascal VOC_aug/benchmark_RELEASE/dataset/img/" + item + ".jpg"
-            mask_path = self.root + "Pascal VOC_aug/benchmark_RELEASE/dataset/seg/" + item + ".png"
+            image_path = self.root + "Pascal_VOC_aug/benchmark_RELEASE/dataset/img/" + item + ".jpg"
+            mask_path = self.root + "Pascal_VOC_aug/benchmark_RELEASE/dataset/seg/" + item + ".png"
             if os.path.isfile(image_path) and os.path.isfile(mask_path):
                 self.check_pairs.append(image_path[len(self.root):] + ' ' + mask_path[len(self.root):])
             else:

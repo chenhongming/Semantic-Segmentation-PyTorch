@@ -159,7 +159,11 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    python3 test.py --cfg ../config/ade20k/ade20k_psp.yaml 
    ```
    
-   ### 6. Reference 
+   ### 6. Performance
+
+   * Doing and Debuging ...  
+
+   ### 7. Reference 
    
    * [semseg](https://github.com/hszhao/semseg)
    * [semantic-segmentation-pytorch](https://github.com/CSAILVision/semantic-segmentation-pytorch)
