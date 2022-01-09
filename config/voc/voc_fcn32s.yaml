@@ -1,0 +1,38 @@
+DATA:
+  TRAIN_JSON: Pascal_VOC/train_.json
+  VAL_JSON: Pascal_VOC/val.json
+  CLASSES: 21
+
+TRAIN:
+  CROP_SIZE: (512, 512)
+  PROB: 0.5
+  RATIO: (1, 2)
+  ROTATE: (-10, 10)
+  BATCH_SIZE: 1
+  WARM_UP_EPOCH: 0
+  SAVE_EPOCH: 10
+
+TEST:
+  MODE: 'image'
+  IMAGE_PATH: "../data/Pascal_VOC/VOC2007/JPEGImages/"
+  VIDEO_PATH: ""
+
+MODEL:
+  PHASE: 'train'
+  NAME: 'fcn32s'
+  BACKBONE_NAME: 'vgg19_bn'
+  BACKBONE_PRETRAINED: True
+  BACKBONE_WEIGHT: "pretrained/vgg19_bn-c79401a0.pth"
+  RESUME: False
+  FINETUNE: False
+  MODEL_WEIGHT: ""
+
+SOLVER:
+  LR_POLICY: 'poly'
+  LR: 1.0
+  WARM_UP_LR: 0.5
+  STEPS: [30, 60, 90]
+
+GPU_USE: True
+GPU_ID: u'0'
+CKPT: '../ckpts/voc/voc_fcn32s'

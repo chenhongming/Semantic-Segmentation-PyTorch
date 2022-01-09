@@ -1,6 +1,7 @@
 import os
 import math
 import matplotlib.pyplot as plt
+from config.config import cfg
 
 
 class Writer:
@@ -11,8 +12,11 @@ class Writer:
         self.log_path = log_path
         if self.log_path is not None:
             self.log_file = os.path.join(self.log_path, 'log.txt')
-            self.file = open(self.log_file, 'w')
-            self.file.write('Epoch' + '\t' + 'Train Loss' + '\n')
+            if cfg.MODEL.RESUME:
+                self.file = open(self.log_file, 'a')
+            else:
+                self.file = open(self.log_file, 'w')
+                self.file.write('Epoch' + '\t' + 'Train Loss' + '\n')
 
     def append(self, msg):
         assert len(msg) == 2

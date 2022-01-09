@@ -64,6 +64,8 @@ class PSPNet(nn.Module):
             out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
         elif cfg.MODEL.PHASE == 'test':
             out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
+        else:
+            out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
         return out
 
 

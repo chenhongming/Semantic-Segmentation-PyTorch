@@ -144,8 +144,7 @@ def main():
     if is_main_process():
         logger.info("\n\t\t\t>>>>> Start training >>>>>")
     for epoch in range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH+1):
-        train_loss = train(model, train_loader, criterion, optimizer, epoch, device, is_distributed)
-        lr_scheduler.step()
+        train_loss = train(model, train_loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed)
         if is_distributed:
             train_sampler.set_epoch(epoch)
         if is_main_process():
@@ -155,7 +154,7 @@ def main():
                 save_checkpoint(cfg.CKPT, epoch, model, optimizer, lr_scheduler)
 
 
-def train(model, loader, criterion, optimizer, epoch, device, is_distributed):
+def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed):
     ave_total_loss = AverageMeter()
     # switch to train model
     model.train()
@@ -177,6 +176,7 @@ def train(model, loader, criterion, optimizer, epoch, device, is_distributed):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            lr_scheduler.adjust_learning_rate(epoch, index, len(loader))
 
             # record loss
             ave_total_loss.update(loss.item())

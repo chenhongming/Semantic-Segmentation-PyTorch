@@ -50,6 +50,8 @@ _C.TRAIN.PADDING = (0, 0, 0)
 _C.TRAIN.IGNORE_LABEL = 255
 
 _C.TRAIN.START_EPOCH = 1
+# Warm up to SOLVER.LR over this number of sgd epochs
+_C.TRAIN.WARM_UP_EPOCH = 0
 _C.TRAIN.MAX_EPOCH = 100
 _C.TRAIN.SAVE_EPOCH = 2
 
@@ -231,8 +233,6 @@ _C.SOLVER.T_MAX = 100  # for 'CosineAnnealing'
 # another method: 'poly', 'step', 'cosine'
 # (lr update by batch size method)
 _C.SOLVER.LR_POLICY = 'poly'
-# Warm up to SOLVER.LR over this number of sgd epochs
-_C.SOLVER.WARM_UP_EPOCH = 0
 # LR of warm up beginning
 _C.SOLVER.WARM_UP_LR = 0.002
 # For 'ploy', the power in poly to drop LR

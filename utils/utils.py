@@ -26,8 +26,7 @@ def setup_seed(seed):
 
 
 def root_path():
-    cur_path = os.path.dirname(__file__)
-    return cur_path[:cur_path.find('Semantic_Segmentation_PyTorch') + len('Semantic_Segmentation_PyTorch')+1]
+    return os.path.abspath(os.path.dirname(os.path.dirname(__file__))) + '/'
 
 
 def set_norm(norm):
