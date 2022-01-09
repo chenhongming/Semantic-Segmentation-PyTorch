@@ -20,6 +20,7 @@ from utils.utils import setup_logger, setup_seed, AverageMeter
 from utils.plot import Writer
 from utils.save import save_checkpoint
 from utils.misc import check_mkdir, params_flops, get_lr, device_info
+from utils.metrics import accuracy, intersectionAndUnion
 from utils.distributed import reduce_tensor, is_main_process
 logger = setup_logger('main-logger')
 
@@ -123,12 +124,13 @@ def main():
     if cfg.MODEL.RESUME:
         if is_main_process():
             ckpt_state = load_resume_state()
+            model.load_state_dict(ckpt_state['state_dict'])
+            optimizer.load_state_dict(ckpt_state['optimizer'])
+
             cfg.TRAIN.START_EPOCH = ckpt_state['epoch']
+            cfg.SOLVER.LR = [param_group['lr'] for param_group in optimizer.param_groups][0]
             logger.info('resume train from epoch: {}'.format(cfg.TRAIN.START_EPOCH))
-            if ckpt_state['optimizer'] is not None and ckpt_state['lr_scheduler'] is not None:
-                optimizer.load_state_dict(ckpt_state['optimizer'])
-                lr_scheduler.load_state_dict(ckpt_state['lr_scheduler'])
-                logger.info('resume optimizer and lr scheduler from resume state...')
+            logger.info('resume optimizer and lr from resume state...')
 
     # Setup Output dir
     if is_main_process():
@@ -141,20 +143,23 @@ def main():
     writer = Writer(cfg.CKPT)
 
     # main loop
+    is_best = False
     if is_main_process():
         logger.info("\n\t\t\t>>>>> Start training >>>>>")
     for epoch in range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH+1):
-        train_loss = train(model, train_loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed)
+        train_loss = train(model, train_loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed, writer)
+        if not cfg.TRAIN.SKIP_VAL and cfg.TRAIN.VAL_EPOCH_INTERVAL:
+            is_best = validation(model, train_loader, device, is_distributed, is_best)
         if is_distributed:
             train_sampler.set_epoch(epoch)
         if is_main_process():
             writer.append([epoch, train_loss])
             writer.draw_curve(cfg.MODEL.NAME)
-            if epoch % cfg.TRAIN.SAVE_EPOCH == 0:
-                save_checkpoint(cfg.CKPT, epoch, model, optimizer, lr_scheduler)
+            if epoch % cfg.TRAIN.SAVE_EPOCH_INTERVAL == 0:
+                save_checkpoint(cfg.CKPT, epoch, model, optimizer, is_best)
 
 
-def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed):
+def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed, writer):
     ave_total_loss = AverageMeter()
     # switch to train model
     model.train()
@@ -180,11 +185,56 @@ def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_d
 
             # record loss
             ave_total_loss.update(loss.item())
+            if is_main_process() and epoch == 1 and index == 0:
+                writer.append([epoch-1, ave_total_loss.avg])
 
             # display msg
             pbar.set_postfix(**{'loss': ave_total_loss.avg, 'lr': get_lr(optimizer)})
             pbar.update(1)
     return ave_total_loss.avg
+
+
+def validation(model, loader, device, is_distributed, is_best):
+    if is_distributed:
+        model = model.module
+    torch.cuda.empty_cache()
+
+    acc_meter = AverageMeter()
+    intersection_meter = AverageMeter()
+    union_meter = AverageMeter()
+    best_pred_meter = AverageMeter()
+
+    # switch to eval model
+    model.to(device).eval()
+    desc = 'Validation'
+    with tqdm(total=len(loader), desc=desc, leave=False) as pbar:
+        for index, (images, masks) in enumerate(loader):
+            # load data to device
+            images = images.to(device)
+            labels = masks.numpy()
+
+            with torch.no_grad():
+                # forward
+                outputs = model(images)
+                preds = outputs.data.max(1)[1].cpu().numpy()
+
+            acc, pix = accuracy(preds, labels)
+            intersection, union = intersectionAndUnion(preds, labels, cfg.DATA.CLASSES, cfg.EVAL.IGNORE_LABEL)
+
+            acc_meter.update(acc, pix)
+            intersection_meter.update(intersection)
+            union_meter.update(union)
+            iou = (intersection_meter.sum / (union_meter.sum + 1e-10)).mean()
+            # display msg
+            pbar.set_postfix(**{'Acc': acc_meter.avg.item() * 100, 'mIoU': iou})
+            pbar.update(1)
+    new_pred = (acc_meter.avg.item() + iou) / 2
+    if new_pred > best_pred_meter.val:
+        is_best = True
+        best_pred_meter.update(new_pred)
+    model.train()
+    # logger.info("best_pred_meter.val: {}".format(best_pred_meter.val))
+    return is_best
 
 
 if __name__ == '__main__':

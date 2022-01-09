@@ -53,7 +53,9 @@ _C.TRAIN.START_EPOCH = 1
 # Warm up to SOLVER.LR over this number of sgd epochs
 _C.TRAIN.WARM_UP_EPOCH = 0
 _C.TRAIN.MAX_EPOCH = 100
-_C.TRAIN.SAVE_EPOCH = 2
+_C.TRAIN.SKIP_VAL = False
+_C.TRAIN.SAVE_EPOCH_INTERVAL = 2
+_C.TRAIN.VAL_EPOCH_INTERVAL = 2
 
 # ---------------------------------------------------------------------------- #
 # EVAL options

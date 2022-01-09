@@ -29,4 +29,4 @@ def save_checkpoint(save_path, epoch, model, optimizer=None, is_best=False):
         best_filename = '{}_{}_{}_best_model.pth'.format(cfg.MODEL.NAME, cfg.MODEL.BACKBONE_NAME, cfg.DATA.DATASET)
         best_filename = os.path.join(save_path, best_filename)
         shutil.copyfile(filename, best_filename)
-        logger.info('best model saved in: {}'.format(filename))
+        logger.info('best model saved in: {}'.format(best_filename))
