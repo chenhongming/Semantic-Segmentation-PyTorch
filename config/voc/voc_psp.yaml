@@ -1,7 +1,7 @@
 DATA:
   DATASET: 'voc'
   TRAIN_JSON: Pascal_VOC/train_.json
-  VAL_JSON: Pascal_VOC/val_.json
+  VAL_JSON: Pascal_VOC/val.json
   CLASSES: 21
 
 TRAIN:
@@ -14,23 +14,22 @@ TRAIN:
   SAVE_EPOCH_INTERVAL: 1
   VAL_EPOCH_INTERVAL: 1
 
-VAL:
-  BATCH_SIZE: 16
 TEST:
   MODE: 'image'
   IMAGE_PATH: "../data/Pascal_VOC/VOC2007/JPEGImages/"
   VIDEO_PATH: ""
-  IS_MERGE: False
 
 MODEL:
-  PHASE: 'val'
-  NAME: 'fcn32s'
-  BACKBONE_NAME: 'vgg19_bn'
-  BACKBONE_PRETRAINED: False
-  BACKBONE_WEIGHT: "pretrained/vgg19_bn-c79401a0.pth"
+  PHASE: 'train'
+  NAME: 'psp'
+  BACKBONE_NAME: 'resnet18'
+  BACKBONE_PRETRAINED: True
+  BACKBONE_WEIGHT: "pretrained/"
   RESUME: False
   FINETUNE: False
-  MODEL_WEIGHT: "ckpts/voc/fcn32s_vgg19_bn/fcn32s_vgg19_bn_voc_best_model.pth"
+  MODEL_WEIGHT: "ckpts/voc/voc_psp/psp_resnet18_voc_model.pth"
+  OUTPUT_STRIDE: 8
+  USE_AUX: False
 
 SOLVER:
   LR_POLICY: 'poly'
@@ -38,6 +37,9 @@ SOLVER:
   WARM_UP_LR: 0.00001
   STEPS: [30, 60, 90]
 
+PPM:
+  POOL_SCALES: (1, 2, 3, 6)
+
 GPU_USE: True
 GPU_ID: u'0'
-CKPT: '../ckpts/voc/fcn32s_vgg19_bn'
+CKPT: '../ckpts/voc/psp_resnet18'

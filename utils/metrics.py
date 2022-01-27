@@ -9,7 +9,7 @@ def accuracy(preds, label):
     return acc, valid_sum
 
 
-def intersectionAndUnion(preds, label, num_class, ignore_index=255):
+def intersectionAndUnion(preds, label, num_class, ignore_index=-1):
     preds = np.asarray(preds).copy()
     label = np.asarray(label).copy()
 

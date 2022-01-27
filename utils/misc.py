@@ -47,3 +47,12 @@ def device_info(device):
     if device == 'cuda':
         logger.info(msg)
     logger.info('*' * 48)
+
+
+def check_preds(pred):
+    if isinstance(pred, tuple):
+        return pred[0]
+    elif isinstance(pred, torch.Tensor):
+        return pred
+    else:
+        raise TypeError

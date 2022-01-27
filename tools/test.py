@@ -18,7 +18,7 @@ from utils.visualization import vis
 def demo():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Testing')
-    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_psp.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='../config/voc/voc_fcn32s.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
@@ -39,7 +39,7 @@ def demo():
         os.environ["CUDA_VISIBLE_DEVICES"] = '0'
         device = "cuda"
     else:
-        logger.info("Using CPU training!!!")
+        logger.info("Using CPU testing!!!")
         device = 'cpu'
     device_info(device)
 
@@ -72,7 +72,7 @@ def demo():
                 with torch.no_grad():
                     output = model(image_)
                 pred = torch.argmax(output, 1).squeeze(0).cpu().data.numpy()
-                result = vis(pred, image, colors)
+                result = vis(pred, image, colors, cfg.TEST.IS_MERGE)
                 logger.info("Testing image: {}".format(image_name))
                 cv.imwrite(os.path.join(cfg.CKPT, 'results/') + image_name.replace(".", "_vis."), result)
             else:

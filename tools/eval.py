@@ -18,7 +18,7 @@ from utils.metrics import accuracy, intersectionAndUnion
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Evaluating')
-    parser.add_argument('--cfg', dest='cfg_file', default='../config/ade20k/ade20k_psp.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='../config/voc/voc_fcn32s.yaml',
                         type=str, help='config file')
     parser.add_argument('opts', help='see ../config/config.py for all options', default=None,
                         nargs=argparse.REMAINDER)
@@ -39,7 +39,7 @@ def main():
         os.environ["CUDA_VISIBLE_DEVICES"] = '0'
         device = "cuda"
     else:
-        logger.info("Using CPU training!!!")
+        logger.info("Using CPU evaluating!!!")
         device = 'cpu'
     device_info(device)
 
@@ -51,13 +51,13 @@ def main():
 
     # Setup Dataloader
     eval_set = dataset.JsonDataset(json_path=cfg.DATA.VAL_JSON,
-                                   split=cfg.MODEL.PHASE,
-                                   batch_size=cfg.EVAL.BATCH_SIZE,
-                                   crop_size=cfg.EVAL.CROP_SIZE,
-                                   padding=cfg.EVAL.PADDING,
-                                   ignore_label=cfg.EVAL.IGNORE_LABEL,
+                                   dataset=cfg.DATA.DATASET,
+                                   batch_size=cfg.VAL.BATCH_SIZE,
+                                   crop_size=cfg.VAL.CROP_SIZE,
+                                   padding=cfg.VAL.PADDING,
+                                   ignore_label=cfg.VAL.IGNORE_LABEL,
                                    transform=input_transform)
-    eval_loader = torch.utils.data.DataLoader(eval_set, batch_size=cfg.EVAL.BATCH_SIZE, shuffle=None,
+    eval_loader = torch.utils.data.DataLoader(eval_set, batch_size=cfg.VAL.BATCH_SIZE, shuffle=None,
                                                pin_memory=True, sampler=None, drop_last=False)
 
     # Setup Model
@@ -83,16 +83,16 @@ def eval(model, loader, device, logger):
     data_time = AverageMeter()
     infer_time = AverageMeter()
 
-    num_images = len(loader) * cfg.EVAL.BATCH_SIZE
+    num_images = len(loader) * cfg.VAL.BATCH_SIZE
     tic = time.time()
-    logger.info('num_images: {} | batch_size: {}'.format(num_images, cfg.EVAL.BATCH_SIZE))
+    logger.info('num_images: {} | batch_size: {}'.format(num_images, cfg.VAL.BATCH_SIZE))
     for index, (images, masks) in enumerate(loader):
         # load data to device
         images = images.to(device)
         labels = masks.numpy()
 
         # measure data loading time
-        data_time.update((time.time() - tic) / cfg.EVAL.BATCH_SIZE)
+        data_time.update((time.time() - tic) / cfg.VAL.BATCH_SIZE)
         tic_ = time.time()
 
         with torch.no_grad():
@@ -100,18 +100,17 @@ def eval(model, loader, device, logger):
             outputs = model(images)
             preds = outputs.data.max(1)[1].cpu().numpy()
 
-        infer_time.update((time.time() - tic_) / cfg.EVAL.BATCH_SIZE)
+        infer_time.update((time.time() - tic_) / cfg.VAL.BATCH_SIZE)
 
         acc, pix = accuracy(preds, labels)
-        intersection, union = intersectionAndUnion(preds, labels, cfg.DATA.CLASSES, cfg.EVAL.IGNORE_LABEL)
+        intersection, union = intersectionAndUnion(preds, labels, cfg.DATA.CLASSES, cfg.VAL.IGNORE_LABEL)
 
         acc_meter.update(acc, pix)
         intersection_meter.update(intersection)
         union_meter.update(union)
         tic = time.time()
-        logger.info('Evaluating: Iter:{}/{} | Mean_ACC: {:4.4f} % | Cur_ACC: {:4.4f} % | '
-                    'Data_Time_Avg: {:.3f} s | Infer_Time_Avg: {:.3f} s'
-                    .format(index, len(loader), acc_meter.avg * 100., acc * 100., data_time.avg, infer_time.avg))
+        logger.info('Evaluating: iter:{}/{}\n | mean_acc: {:4.4f} % | cur_acc: {:4.4f} % | infer_time_avg: {:.3f} s'
+                    .format(index, len(loader), acc_meter.avg * 100., acc * 100., infer_time.avg))
     iou = intersection_meter.sum / (union_meter.sum + 1e-10)
     for i, _iou in enumerate(iou):
         logger.info('class [{}], IoU: {:.4}'.format(i+1, _iou))

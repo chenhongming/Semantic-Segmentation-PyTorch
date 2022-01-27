@@ -36,14 +36,11 @@ class LRASPP(nn.Module):
                                self.inter_channels, self.classes, self.norm_layer)
 
     def forward(self, x):
-        x_size = x.size()[2:]  # for test
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
+        x_size = x.size()[2:]
 
         c2, _, _, c5 = self.backbone(x)
         out = self.head([c2, c5])
-        out = F.interpolate(out, out_size, mode='bilinear', align_corners=True)
-        if cfg.MODEL.PHASE == 'test':
-            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
+        out = F.interpolate(out, x_size, mode='bilinear', align_corners=True)
         return out
 
 

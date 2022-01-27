@@ -19,16 +19,17 @@ from solver.scheduler import set_scheduler
 from utils.utils import setup_logger, setup_seed, AverageMeter
 from utils.plot import Writer
 from utils.save import save_checkpoint
-from utils.misc import check_mkdir, params_flops, get_lr, device_info
+from utils.misc import check_mkdir, params_flops, get_lr, device_info, check_preds
 from utils.metrics import accuracy, intersectionAndUnion
-from utils.distributed import reduce_tensor, is_main_process
+from utils.distributed import reduce_tensor, is_main_process, synchronize
 logger = setup_logger('main-logger')
+best_pred = cfg.MODEL.BEST_PRED
 
 
 def main():
     # Setup Config
     parser = argparse.ArgumentParser(description='Semantic Segmentation Model Training')
-    parser.add_argument('--cfg', dest='cfg_file', default='./config/ade20k/ade20k_psp.yaml',
+    parser.add_argument('--cfg', dest='cfg_file', default='./config/voc/voc_fcn32s.yaml',
                         type=str, help='config file')
     parser.add_argument("--local_rank", default=0, type=int)
     parser.add_argument('opts', help='see ./config/config.py for all options', default=None,
@@ -59,7 +60,7 @@ def main():
                 # init distributed training mode
                 dist.init_process_group(backend="nccl", init_method="env://")
                 torch.cuda.set_device(args.local_rank)
-                dist.barrier()
+                synchronize()
                 if is_main_process():
                     logger.info("Using Multi GPU training!!!")
                 device = "cuda"
@@ -83,13 +84,20 @@ def main():
 
     # Setup Dataloader
     train_set = dataset.JsonDataset(json_path=cfg.DATA.TRAIN_JSON,
-                                    split=cfg.MODEL.PHASE,
+                                    dataset=cfg.DATA.DATASET,
                                     batch_size=cfg.TRAIN.BATCH_SIZE,
                                     crop_size=cfg.TRAIN.CROP_SIZE,
                                     padding=cfg.TRAIN.PADDING,
                                     ignore_label=cfg.TRAIN.IGNORE_LABEL,
                                     transform=input_transform,
                                     augmentations=input_augmentation)
+
+    val_set = dataset.JsonDataset(json_path=cfg.DATA.VAL_JSON,
+                                  batch_size=cfg.VAL.BATCH_SIZE,
+                                  crop_size=cfg.VAL.CROP_SIZE,
+                                  padding=cfg.VAL.PADDING,
+                                  ignore_label=cfg.VAL.IGNORE_LABEL,
+                                  transform=input_transform)
     if is_distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_set)
     else:
@@ -97,7 +105,8 @@ def main():
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=cfg.TRAIN.BATCH_SIZE,
                                                shuffle=(True if train_sampler is None else False),
                                                pin_memory=True, sampler=train_sampler, drop_last=True)
-
+    val_loader = torch.utils.data.DataLoader(val_set, batch_size=cfg.VAL.BATCH_SIZE,
+                                             shuffle=False, pin_memory=True, drop_last=False)
     # Setup Model
     model = generate_model().to(device)
     if is_main_process():
@@ -130,7 +139,7 @@ def main():
             cfg.TRAIN.START_EPOCH = ckpt_state['epoch']
             cfg.SOLVER.LR = [param_group['lr'] for param_group in optimizer.param_groups][0]
             logger.info('resume train from epoch: {}'.format(cfg.TRAIN.START_EPOCH))
-            logger.info('resume optimizer and lr from resume state...')
+            logger.info('resume lr : {}'.format(cfg.SOLVER.LR))
 
     # Setup Output dir
     if is_main_process():
@@ -148,8 +157,8 @@ def main():
         logger.info("\n\t\t\t>>>>> Start training >>>>>")
     for epoch in range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH+1):
         train_loss = train(model, train_loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed, writer)
-        if not cfg.TRAIN.SKIP_VAL and cfg.TRAIN.VAL_EPOCH_INTERVAL:
-            is_best = validation(model, train_loader, device, is_distributed, is_best)
+        if not cfg.TRAIN.SKIP_VAL and epoch % cfg.TRAIN.VAL_EPOCH_INTERVAL == 0 and is_main_process():
+            is_best = validation(model, val_loader, device, is_distributed, is_best)
         if is_distributed:
             train_sampler.set_epoch(epoch)
         if is_main_process():
@@ -157,6 +166,7 @@ def main():
             writer.draw_curve(cfg.MODEL.NAME)
             if epoch % cfg.TRAIN.SAVE_EPOCH_INTERVAL == 0:
                 save_checkpoint(cfg.CKPT, epoch, model, optimizer, is_best)
+        synchronize()
 
 
 def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed, writer):
@@ -195,6 +205,7 @@ def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_d
 
 
 def validation(model, loader, device, is_distributed, is_best):
+    global best_pred
     if is_distributed:
         model = model.module
     torch.cuda.empty_cache()
@@ -202,7 +213,6 @@ def validation(model, loader, device, is_distributed, is_best):
     acc_meter = AverageMeter()
     intersection_meter = AverageMeter()
     union_meter = AverageMeter()
-    best_pred_meter = AverageMeter()
 
     # switch to eval model
     model.to(device).eval()
@@ -216,10 +226,11 @@ def validation(model, loader, device, is_distributed, is_best):
             with torch.no_grad():
                 # forward
                 outputs = model(images)
-                preds = outputs.data.max(1)[1].cpu().numpy()
+                preds = check_preds(outputs)
+                preds = preds.data.max(1)[1].cpu().numpy()
 
             acc, pix = accuracy(preds, labels)
-            intersection, union = intersectionAndUnion(preds, labels, cfg.DATA.CLASSES, cfg.EVAL.IGNORE_LABEL)
+            intersection, union = intersectionAndUnion(preds, labels, cfg.DATA.CLASSES, cfg.VAL.IGNORE_LABEL)
 
             acc_meter.update(acc, pix)
             intersection_meter.update(intersection)
@@ -229,11 +240,12 @@ def validation(model, loader, device, is_distributed, is_best):
             pbar.set_postfix(**{'Acc': acc_meter.avg.item() * 100, 'mIoU': iou})
             pbar.update(1)
     new_pred = (acc_meter.avg.item() + iou) / 2
-    if new_pred > best_pred_meter.val:
+    logger.info("new_pred: {}".format(new_pred))
+    logger.info("best_pred: {}".format(best_pred))
+    if new_pred > best_pred:
         is_best = True
-        best_pred_meter.update(new_pred)
+        best_pred = new_pred
     model.train()
-    # logger.info("best_pred_meter.val: {}".format(best_pred_meter.val))
     return is_best
 
 

@@ -65,21 +65,17 @@ class ContextNet(nn.Module):
 
     def forward(self, x):
         x_size = x.size()[2:]  # for test
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
         size = (x.size()[2] // 4, x.size()[3] // 4)
         s = self.shadow_net(x)
 
         x = self.deep_net(F.interpolate(x, size=size, mode='bilinear', align_corners=True))
         out = self.feature_fusion_module([s, x])
         out = self.output(out)
+        out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         if self.aux and cfg.MODEL.PHASE == 'train':
             auxout = self.auxlayer(x)
-            auxout = F.interpolate(auxout, size=out_size, mode='bilinear', align_corners=True)
+            auxout = F.interpolate(auxout, size=x_size, mode='bilinear', align_corners=True)
             return out, auxout
-        elif cfg.MODEL.PHASE == 'val':
-            out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
-        elif cfg.MODEL.PHASE == 'test':
-            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         return out
 
 

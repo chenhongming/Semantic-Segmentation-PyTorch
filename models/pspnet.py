@@ -49,23 +49,17 @@ class PSPNet(nn.Module):
         )
 
     def forward(self, x):
-        x_size = x.size()[2:]  # for test
-        out_size = (x.size()[2] // self.output_stride, x.size()[3] // self.output_stride)  # for train or val
+        x_size = x.size()[2:]
 
         _, _, c4, c5 = self.backbone(x)
         c5 = self.head(c5)
         out = self.output(c5)
+        out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
         if cfg.MODEL.USE_AUX and cfg.MODEL.PHASE == 'train' and c4 is not None:
             aux_out = self.aux(c4)
             aux_out = self.output(aux_out)
-            aux_out = F.interpolate(aux_out, size=out_size, mode='bilinear', align_corners=True)
+            aux_out = F.interpolate(aux_out, size=x_size, mode='bilinear', align_corners=True)
             return out, aux_out
-        elif cfg.MODEL.PHASE == 'val':
-            out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
-        elif cfg.MODEL.PHASE == 'test':
-            out = F.interpolate(out, size=x_size, mode='bilinear', align_corners=True)
-        else:
-            out = F.interpolate(out, size=out_size, mode='bilinear', align_corners=True)
         return out
 
 

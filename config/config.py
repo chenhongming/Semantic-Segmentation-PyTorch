@@ -47,7 +47,7 @@ _C.TRAIN.CROP_SIZE = (640, 512)
 # params of using RandomRotate: PADDING for img, IGNORE_LABEL for mask
 _C.TRAIN.ROTATE = (-10, 10)
 _C.TRAIN.PADDING = (0, 0, 0)
-_C.TRAIN.IGNORE_LABEL = 255
+_C.TRAIN.IGNORE_LABEL = -1
 
 _C.TRAIN.START_EPOCH = 1
 # Warm up to SOLVER.LR over this number of sgd epochs
@@ -60,12 +60,12 @@ _C.TRAIN.VAL_EPOCH_INTERVAL = 2
 # ---------------------------------------------------------------------------- #
 # EVAL options
 # ---------------------------------------------------------------------------- #
-_C.EVAL = CN()
-_C.EVAL.BATCH_SIZE = 8
-_C.EVAL.CROP_SIZE = [640, 512]
+_C.VAL = CN()
+_C.VAL.BATCH_SIZE = 8
+_C.VAL.CROP_SIZE = [640, 512]
 # params of using RandomRotate: PADDING for img, IGNORE_LABEL for mask
-_C.EVAL.PADDING = (0, 0, 0)
-_C.EVAL.IGNORE_LABEL = 255
+_C.VAL.PADDING = (0, 0, 0)
+_C.VAL.IGNORE_LABEL = -1
 
 # ---------------------------------------------------------------------------- #
 # EVAL options
@@ -76,6 +76,7 @@ _C.TEST.MODE = 'image'
 _C.TEST.IMAGE_PATH = ""
 # "": realtime camera; "path": local video
 _C.TEST.VIDEO_PATH = ""
+_C.TEST.IS_MERGE = True
 
 # ---------------------------------------------------------------------------- #
 # Model options
@@ -127,6 +128,7 @@ _C.MODEL.USE_AUX = True
 _C.MODEL.AUX_LOSS_WEIGHT = 0.4
 # for bisenet
 _C.MODEL.AUX2_LOSS_WEIGHT = 0.4
+_C.MODEL.BEST_PRED = 0.0
 
 # ---------------------------------------------------------------------------- #
 # PSP(PPM) options
@@ -208,7 +210,7 @@ _C.SOLVER.LOSS_NAME = ''  # only CrossEntropyLoss
 # Used to solve the problem of category imbalance
 _C.SOLVER.LOSS_WEIGHT = []
 # Category not used to calculate loss
-_C.SOLVER.IGNORE_LABEL = 255
+_C.SOLVER.IGNORE_LABEL = -1
 # sgd adam asgd adamax adadelta adagrad rmsprop
 _C.SOLVER.OPTIMIZER_NAME = 'sgd'
 _C.SOLVER.LR = 0.02

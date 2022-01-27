@@ -68,7 +68,7 @@ class RandomCrop:
 
 # Randomly rotate image & mask with rotate factor in (rotate_min, rotate_max)
 class RandomRotate:
-    def __init__(self, rotate=(-10, 10), padding=(0, 0, 0), ignore_label=255):
+    def __init__(self, rotate=(-10, 10), padding=(0, 0, 0), ignore_label=-1):
         self.rotate = rotate
         self.padding = padding
         self.ignore_label = ignore_label
