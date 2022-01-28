@@ -21,7 +21,7 @@ from utils.plot import Writer
 from utils.save import save_checkpoint
 from utils.misc import check_mkdir, params_flops, get_lr, device_info, check_preds
 from utils.metrics import accuracy, intersectionAndUnion
-from utils.distributed import reduce_tensor, is_main_process, synchronize
+from utils.distributed import is_main_process, synchronize
 logger = setup_logger('main-logger')
 best_pred = cfg.MODEL.BEST_PRED
 
@@ -155,10 +155,13 @@ def main():
     is_best = False
     if is_main_process():
         logger.info("\n\t\t\t>>>>> Start training >>>>>")
+    synchronize()
     for epoch in range(cfg.TRAIN.START_EPOCH, cfg.TRAIN.MAX_EPOCH+1):
-        train_loss = train(model, train_loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed, writer)
-        if not cfg.TRAIN.SKIP_VAL and epoch % cfg.TRAIN.VAL_EPOCH_INTERVAL == 0 and is_main_process():
-            is_best = validation(model, val_loader, device, is_distributed, is_best)
+        train_loss = train(model, train_loader, criterion, optimizer, lr_scheduler, epoch, device, writer)
+        if not cfg.TRAIN.SKIP_VAL and epoch % cfg.TRAIN.VAL_EPOCH_INTERVAL == 0:
+            torch.cuda.empty_cache()
+            if is_main_process():
+                is_best = validation(model, val_loader, device, is_distributed, is_best)
         if is_distributed:
             train_sampler.set_epoch(epoch)
         if is_main_process():
@@ -169,7 +172,7 @@ def main():
         synchronize()
 
 
-def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_distributed, writer):
+def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, writer):
     ave_total_loss = AverageMeter()
     # switch to train model
     model.train()
@@ -184,8 +187,6 @@ def train(model, loader, criterion, optimizer, lr_scheduler, epoch, device, is_d
             outputs = model(images)
             loss = criterion(outputs, masks)
             loss = loss.mean()
-            if is_distributed:
-                loss = reduce_tensor(loss)
 
             # backward
             optimizer.zero_grad()
@@ -216,7 +217,7 @@ def validation(model, loader, device, is_distributed, is_best):
 
     # switch to eval model
     model.to(device).eval()
-    desc = 'Validation'
+    desc = 'validation'
     with tqdm(total=len(loader), desc=desc, leave=False) as pbar:
         for index, (images, masks) in enumerate(loader):
             # load data to device
@@ -240,8 +241,6 @@ def validation(model, loader, device, is_distributed, is_best):
             pbar.set_postfix(**{'Acc': acc_meter.avg.item() * 100, 'mIoU': iou})
             pbar.update(1)
     new_pred = (acc_meter.avg.item() + iou) / 2
-    logger.info("new_pred: {}".format(new_pred))
-    logger.info("best_pred: {}".format(best_pred))
     if new_pred > best_pred:
         is_best = True
         best_pred = new_pred

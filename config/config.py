@@ -213,6 +213,7 @@ _C.SOLVER.LOSS_WEIGHT = []
 _C.SOLVER.IGNORE_LABEL = -1
 # sgd adam asgd adamax adadelta adagrad rmsprop
 _C.SOLVER.OPTIMIZER_NAME = 'sgd'
+# lr for single gpu
 _C.SOLVER.LR = 0.02
 _C.SOLVER.MOMENTUM = 0.99
 _C.SOLVER.WEIGHT_DECAY = 4e-5
