@@ -121,42 +121,42 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
   
   ### 3. Train
   
-   Modify `.yaml` file in  `config/ade20k/` folder.
+   Modify `.yaml` file in  `config/voc/` folder.
    
    *NOTE:*  Check  `MODEL:PHASE:'train'`
    
    * Single GPU or CPU 
    ```
-   python3 train.py --cfg ../config/ade20k/ade20k_psp.yaml 
+   python3 train.py --cfg ../config/voc/voc_fcn32s.yaml 
    ```
   
    * Multi GPU
 
   *NOTE:* `nproc_per_node=4` means using 4 GPUs.
   ```
-   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 -m torch.distributed.launch --nproc_per_node=4 train.py --cfg ../config/ade20k/ade20k_psp.yaml 
+   CUDA_VISIBLE_DEVICES=0,1,2,3 python3 -m torch.distributed.launch --nproc_per_node=4 train.py --cfg ../config/voc/voc_fcn32s.yaml  
    ```
    
    ### 4. Eval
   
-   Modify `.yaml` file in  `config/ade20k/` folder.
+   Modify `.yaml` file in  `config/voc/` folder.
    
    *NOTE:*  Check  `MODEL:PHASE:'val'`
    
   * Single GPU or CPU 
    ```
-   python3 eval.py --cfg ../config/ade20k/ade20k_psp.yaml 
+   python3 eval.py --cfg ../config/voc/voc_fcn32s.yaml
    ```
    
    ### 5. Test
   
-   Modify `.yaml` file in  `config/ade20k/` folder.
+   Modify `.yaml` file in  `config/voc/` folder.
    
    *NOTE:*  Check  `MODEL:PHASE:'test'`
    
    * Single GPU or CPU 
    ```
-   python3 test.py --cfg ../config/ade20k/ade20k_psp.yaml 
+   python3 test.py --cfg ../config/voc/voc_fcn32s.yaml 
    ```
    
    ### 6. Performance
