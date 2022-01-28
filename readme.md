@@ -121,7 +121,7 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
   
   ### 3. Train
   
-   Modify `.yaml` file in  `config/voc/` folder.
+   Modify `.yaml` file in  `config/voc/` folder. See [../config/config.py](https://github.com/chenhongming/Semantic-Segmentation-PyTorch/tree/master/config/config.py) for all options.  
    
    *NOTE:*  Check  `MODEL:PHASE:'train'`
    
@@ -139,7 +139,7 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    
    ### 4. Eval
   
-   Modify `.yaml` file in  `config/voc/` folder.
+   Modify `.yaml` file in  `config/voc/` folder. See [../config/config.py](https://github.com/chenhongming/Semantic-Segmentation-PyTorch/tree/master/config/config.py) for all options.  
    
    *NOTE:*  Check  `MODEL:PHASE:'val'`
    
@@ -150,7 +150,8 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
    
    ### 5. Test
   
-   Modify `.yaml` file in  `config/voc/` folder.
+   Modify `.yaml` file in  `config/voc/` folder. See [../config/config.py](https://github.com/chenhongming/Semantic-Segmentation-PyTorch/tree/master/config/config.py) for all options.  
+
    
    *NOTE:*  Check  `MODEL:PHASE:'test'`
    
